@@ -18,6 +18,7 @@ A demo control room for the IT Project Management Office of a **fictitious bank*
 - Overdue cards are highlighted. The sample due dates are relative to today, so some cards are always overdue.
 - Deleting a card asks for inline confirmation (**Delete? Yes / No**).
 - Optional email notice for each new task, sent through [FormSubmit](https://formsubmit.co).
+- **Security briefing reminder:** after 10 seconds on the page, a dialog announces the company security briefing next Monday at 10:00 am in the Town Hall room. It shows once per visit. The script is `.claude/hooks/security-briefing.js`, and the details are editable at the top of that file.
 - Responsive layout and keyboard accessible.
 
 ## Run it locally
@@ -50,7 +51,7 @@ FormSubmit needs a one-time activation. The first submission sends a confirmatio
 
 ## Deployment
 
-Every push to `main` deploys `index.html` to GitHub Pages through the workflow in [`.github/workflows/pages.yml`](.github/workflows/pages.yml). Only the site file is published, not repo files such as `CLAUDE.md`, `.claude/` or `.agents/`.
+Every push to `main` deploys `index.html` to GitHub Pages through the workflow in [`.github/workflows/pages.yml`](.github/workflows/pages.yml). Only the site file and the briefing hook script are published, not repo files such as `CLAUDE.md`, `.claude/` or `.agents/`.
 
 ## Disclaimer
 

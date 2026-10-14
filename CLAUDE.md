@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-A demo IT PMO control room (combined KPI + Kanban view) for a fictitious bank, used as a training tool. The whole app is one file, `index.html`, with inline `<style>` and `<script>`. There is no build, package manager, linter or test suite.
+A demo IT PMO control room (combined KPI + Kanban view) for a fictitious bank, used as a training tool. The whole app is one file, `index.html`, with inline `<style>` and `<script>` (plus one small hook script, see below). There is no build, package manager, linter or test suite.
 
 ## Hard constraints (from the original spec; keep them)
 
@@ -46,6 +46,13 @@ All behaviour follows one rule: **mutate `state`, then call `renderBoard()`**.
 - Staff names are masked to initials (`maskName()`, `state.maskNames`) unless the user clicks "Show full names"; this is never persisted.
 - `findSensitive()` blocks card/account numbers, national IDs, emails and password-like text in the Add Task title and description. The modal warns that FormSubmit is an external service.
 - `DATA_CLASSES` feeds the Data privacy view. Add a row there when a new kind of data is shown.
+
+## Security briefing hook
+
+- `.claude/hooks/security-briefing.js` is a self-contained browser script, loaded by the last `<script src>` in `index.html`. After 10 seconds of visible time it shows a native `<dialog>` once: a company security briefing next Monday at 10:00 am in the Town Hall room. Edit `CONFIG` at the top of the file to change the delay, wording, weekday, time or place.
+- It is the one exception to the single-file rule. The Pages workflow copies it to `_site/.claude/hooks/`; keep that line in `.github/workflows/pages.yml` or the popup silently disappears from the live site.
+- It follows the same rules as the app: no `alert()`, no storage, no network. It waits if the Add Task modal is open.
+- These are not Claude Code hooks (`settings.json`); those run on tool events and cannot react to a website visit.
 
 ## Add Task and FormSubmit
 
