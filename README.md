@@ -2,17 +2,17 @@
 
 A demo control room for the IT Project Management Office of a **fictitious bank**, built as a training tool. It combines plain-language KPIs with a Kanban board. The whole app is one file, `index.html`, written in plain HTML, CSS and JavaScript. It has no build step, no dependencies and no server.
 
-**Live demo:** https://madhubala0703.github.io/ClaudecodeTest/
+**Live demo:** https://madhubala0703.github.io/it-pmo-control-room/
 
 ![IT PMO Control Room screenshot](docs/screenshot.png)
 
 ## Features
 
 - **Combined view:** a plain-language headline ("3 of 7 open tasks need attention"), six KPI cards and the Kanban board on one page.
-- **Navigation:** a sidebar (a bottom bar on phones) with Combined view, Task board, KPIs and trends, and Data privacy. Each view has its own link, such as `#kpis`.
-- **KPIs for non-technical users:** each card has a plain label, one number, a one-line meaning and a status with an icon and text (never colour alone). "Show these tasks" filters the board to the matching cards.
+- **Navigation:** a grouped sidebar (Overview, Details, Governance; a bottom bar on phones) with Combined view, Task board, KPIs and trends, and Data privacy. A badge shows how many tasks need attention, and each view has its own link, such as `#kpis`.
+- **KPIs for non-technical users:** cards are grouped under three plain questions ("How much work is there?", "What needs attention?", "Are we on track?"). Each shows one number, a bar, a one-line meaning, when its status changes, and a status with an icon and text (never colour alone). "Show these tasks" filters the board to the matching cards.
 - **Live refresh every 5 seconds:** figures update from a simulated in-page async source, using parallel requests that never overlap. Updates pause when the tab is hidden or when you click Pause. The board itself is not redrawn by a refresh.
-- **Sensitive data considerations:** analytics use counts only, staff names are shown as initials by default, the Add Task form blocks card numbers, national IDs, emails and passwords, and a Data privacy page lists what is handled and what a real deployment would still need.
+- **Sensitive data considerations:** one set of badges (Counts only, Personal data, Confidential, Leaves the bank) labels every panel. Analytics use counts only, staff names are shown as initials and re-hide after 60 seconds if revealed, the Add Task form blocks card numbers, national IDs, emails and passwords, and a Data privacy page traces where a task's data goes.
 - Four columns: **Backlog**, **In Progress**, **Blocked** and **Done**. Drag and drop cards, or use the **Move to** menu on each card from the keyboard.
 - Add tasks through a validated form. Filter by project, assignee and priority.
 - Overdue cards are highlighted. The sample due dates are relative to today, so some cards are always overdue.

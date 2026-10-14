@@ -26,7 +26,7 @@ All behaviour follows one rule: **mutate `state`, then call `renderBoard()`**.
 
 - `state = { tasks, filters, pendingDeleteId, nextId }` is the single source of truth. Card UI state (which card is showing the delete confirm) lives in `state.pendingDeleteId`, not in the DOM.
 - `renderBoard()` rebuilds every column from `applyFilters(state.tasks)` via `renderCard()`. Nothing outside `renderBoard()` edits card contents directly. A refresh never calls it, so drag, focus and the delete confirm are not disturbed.
-- `addTask()`, `moveTask()` and `deleteTask()` are the only task mutators; each calls `renderBoard()` then `refreshNow()`. Task IDs come from `nextTaskId()` as `UOB-ITPM-####`; seed tasks consume IDs 0001–0008.
+- `addTask()`, `moveTask()` and `deleteTask()` are the only task mutators; each calls `renderBoard()` then `refreshNow()`. Task IDs come from `nextTaskId()` as `DEMO-ITPM-####`; seed tasks consume IDs 0001–0008.
 - Event handling is delegated: `bindDragAndDrop(board)` and `bindCardControls(board)` attach once to `#board`, so re-rendering never needs rebinding. Card buttons/selects are identified by `data-action` and `data-id`. After a re-render, `focusCardControl()` restores keyboard focus.
 - Drag and drop uses the native HTML5 API; the drop target column reads `data-status`. The "Move ▸" select is the keyboard fallback and calls the same `moveTask()`.
 - All user strings pass through `escapeHtml()` before going into template literals. Keep that for any new field.
@@ -36,14 +36,15 @@ All behaviour follows one rule: **mutate `state`, then call `renderBoard()`**.
 ## Views, KPIs and live refresh
 
 - `VIEWS` drives the sidebar (bottom bar under 900px) and hash routing (`#combined`, `#board`, `#kpis`, `#privacy`). Sections carry `data-views="..."`; `setView()` toggles `hidden`. Combined = headline + KPI cards + board.
-- KPI cards are built once by `buildKpiGrid()` from `KPI_DEFS` and updated in place by `updateKpis()` (so focus survives). KPI "Show these tasks" sets `state.filters.quick` (`QUICK_FILTERS`) and drills into the board. Header counts are computed over all tasks, not the filtered set.
+- KPI cards are built once by `buildKpiGrid()` from `KPI_GROUPS` (three plain-language questions) and `KPI_DEFS`, and updated in place by `updateKpis()` (so focus survives). Each def supplies a bar fraction, a context sentence and a `rule` explaining when the status changes. KPI "Show these tasks" sets `state.filters.quick` (`QUICK_FILTERS`) and drills into the board. Header counts are computed over all tasks, not the filtered set.
 - Analytics data comes from `api.*` in the script: simulated async functions (local, with latency), because the only allowed network call is FormSubmit. `refresh()` runs them with `Promise.all`, never overlaps requests (`live.inflight`/`live.rerun`), reschedules itself every `REFRESH_MS` (5s), and pauses when the tab is hidden or the user clicks Pause.
 - Keep the async rules in `.claude/skills/frontend-async-best-practices`: parallelise independent work, chain only dependent work.
 
 ## Sensitive data in analytics
 
 - Analytics use counts only. Never put titles, descriptions or emails into KPIs, tables or the activity log (IDs and stages only).
-- Staff names are masked to initials (`maskName()`, `state.maskNames`) unless the user clicks "Show full names"; this is never persisted.
+- Staff names are masked to initials (`maskName()`, `state.maskNames`) unless the user clicks "Show full names"; this is never persisted. Revealed names re-mask after 60 seconds or when the user leaves the KPIs view (`hideNames()`).
+- Sensitive data uses one badge vocabulary, `SENSITIVITY` + `sensHtml()` (Counts only, Personal data, Confidential, Leaves the bank). Mark elements with `data-sens`; `init()` renders them.
 - `findSensitive()` blocks card/account numbers, national IDs, emails and password-like text in the Add Task title and description. The modal warns that FormSubmit is an external service.
 - `DATA_CLASSES` feeds the Data privacy view. Add a row there when a new kind of data is shown.
 
@@ -59,13 +60,14 @@ All behaviour follows one rule: **mutate `state`, then call `renderBoard()`**.
 - `.claude/hooks/security-briefing.js` is a self-contained browser script, loaded by the last `<script src>` in `index.html`. After 10 seconds of visible time it shows a native `<dialog>` once: a company security briefing next Monday at 10:00 am in the Town Hall room. Edit `CONFIG` at the top of the file to change the delay, wording, weekday, time or place.
 - It is the one exception to the single-file rule. The Pages workflow copies it to `_site/.claude/hooks/`; keep that line in `.github/workflows/pages.yml` or the popup silently disappears from the live site.
 - It follows the same rules as the app: no `alert()`, no storage, no network. It waits if the Add Task modal is open.
-- These are not Claude Code hooks (`settings.json`); those run on tool events and cannot react to a website visit.
+- The popup is browser code, not a Claude Code hook. `.claude/hooks/check-security-briefing.sh` is a real Claude Code PostToolUse hook (registered in `.claude/settings.json`): after edits to `index.html` or the script it checks that the script tag, 10-second delay, time, place and the Pages copy step are still in place, and rejects `alert()`/`confirm()`.
 
 ## Add Task and FormSubmit
 
 - `handleSubmit()` validates with `validateTask()` (inline errors via `showErrors()`), then adds the card optimistically, and only then calls `notifyNewTask()`. The submit button shows "Sending…" while in flight and the modal closes when the request settles.
 - `FORMSUBMIT_ENDPOINT` at the top of the script is the one place to set the recipient email. FormSubmit needs a one-time activation: the first submission emails a confirmation link to that address, and nothing is delivered until it is clicked.
 - `notifyNewTask()` throws on a non-OK response or on `success: "false"`. Callers catch it and show "Card added locally — email notification failed"; a FormSubmit failure must never break the board.
+
 
 ## Related copy
 

@@ -18,3 +18,7 @@ Thumbs.db
 
 # Pages build output
 _site/
+
+# Python bytecode
+__pycache__/
+*.pyc

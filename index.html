@@ -7,38 +7,42 @@
 <style>
 /* =========================================================
    Design tokens
-   Direction: a calm control room in corporate blue. Plain words first,
-   numbers second, colour is never the only signal (icon + text always).
+   Direction: an operations "status board" for people who do not read dashboards
+   for a living. Every figure is a plain question, one number, one sentence and
+   a status that uses icon + words (never colour alone). Sensitive data is
+   labelled with the same four badges everywhere it appears.
    ========================================================= */
 :root {
-  --c-brand: #0b3d91;
-  --c-brand-dark: #072a66;
-  --c-brand-light: #e8eefa;
+  --c-ink: #0a1f44;
+  --c-brand: #1744a6;
+  --c-brand-dark: #0f2f7a;
+  --c-brand-light: #e6edfb;
   --c-nav: #0a2552;
-  --c-nav-text: #dbe6fb;
-  --c-bg: #f2f5fa;
+  --c-nav-text: #d6e2fb;
+  --c-bg: #f3f5f9;
   --c-surface: #ffffff;
-  --c-border: #d5dbe6;
-  --c-text: #1b2333;
-  --c-muted: #55607a;
+  --c-border: #d3d9e6;
+  --c-border-soft: #e6eaf2;
+  --c-text: #17203a;
+  --c-muted: #4f5b75;
   --c-focus: #0b57d0;
   --c-focus-on-dark: #ffbf47;
 
-  --c-critical: #c62828;
+  --c-critical: #b42318;
   --c-high: #d98200;
   --c-medium: #1e63d6;
-  --c-low: #8a94a6;
+  --c-low: #6b7690;
 
-  --c-danger: #b3261e;
-  --c-danger-bg: #fdecea;
-  --c-success: #1b7a3e;
-  --c-success-bg: #e6f4ea;
-  --c-warning: #8a5300;
-  --c-warning-bg: #fff4e0;
-  --c-private: #6a2c91;
-  --c-private-bg: #f3e9fa;
+  --c-danger: #b42318;
+  --c-danger-bg: #fde8e6;
+  --c-success: #146c43;
+  --c-success-bg: #e4f4ea;
+  --c-warning: #8a4b00;
+  --c-warning-bg: #fff1d6;
+  --c-private: #5b2a86;
+  --c-private-bg: #f1e7fa;
 
-  --seg-backlog: #8a94a6;
+  --seg-backlog: #6b7690;
   --seg-progress: #1e63d6;
   --seg-blocked: #d98200;
   --seg-done: #1b7a3e;
@@ -49,10 +53,11 @@
   --space-4: 16px;
   --space-5: 24px;
   --space-6: 32px;
+  --space-7: 48px;
 
-  --radius: 8px;
-  --radius-sm: 4px;
-  --shadow: 0 1px 3px rgba(16, 30, 60, 0.12);
+  --radius: 10px;
+  --radius-sm: 6px;
+  --shadow: 0 1px 2px rgba(16, 30, 60, 0.1);
   --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-display: ui-serif, Georgia, Cambria, "Times New Roman", serif;
 }
@@ -64,7 +69,7 @@
 body {
   margin: 0;
   font-family: var(--font);
-  font-size: 15px;
+  font-size: 16px;
   line-height: 1.5;
   color: var(--c-text);
   background: var(--c-bg);
@@ -72,25 +77,28 @@ body {
 button, input, select, textarea { font: inherit; color: inherit; }
 button { cursor: pointer; }
 :focus-visible { outline: 3px solid var(--c-focus); outline-offset: 2px; }
-.sidebar :focus-visible, .app-header :focus-visible { outline-color: var(--c-focus-on-dark); }
+.sidebar :focus-visible, .app-header :focus-visible, .skip-link:focus-visible { outline-color: var(--c-focus-on-dark); }
 .visually-hidden {
   position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
   overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
 }
+.skip-link { position: absolute; left: var(--space-3); top: -60px; z-index: 50; background: var(--c-ink); color: #fff; padding: var(--space-2) var(--space-4); border-radius: var(--radius-sm); }
+.skip-link:focus { top: var(--space-3); }
 [data-views][hidden] { display: none; }
 .icon { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
 /* =========================================================
-   Header
+   Header (shares the navy of the sidebar so the chrome reads as one frame)
    ========================================================= */
 .app-header {
-  background: var(--c-brand);
+  background: var(--c-nav);
   color: #fff;
   padding: var(--space-3) var(--space-5);
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-3) var(--space-4);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
 }
 .wordmark {
   margin: 0;
@@ -102,15 +110,15 @@ button { cursor: pointer; }
   gap: var(--space-2);
   margin-right: auto;
 }
-.wordmark-box { display: inline-block; border: 2px solid #fff; border-radius: var(--radius-sm); padding: 0 var(--space-2); }
-.wordmark small { font-weight: 400; font-size: 13px; opacity: 0.85; letter-spacing: 0; }
+.wordmark-box { display: inline-block; background: #fff; color: var(--c-brand-dark); border-radius: var(--radius-sm); padding: 0 var(--space-2); }
+.wordmark small { font-weight: 400; font-size: 14px; opacity: 0.9; letter-spacing: 0; }
 
 .live {
   display: flex; align-items: center; gap: var(--space-2);
   background: rgba(255, 255, 255, 0.12);
   border-radius: 999px;
   padding: var(--space-1) var(--space-1) var(--space-1) var(--space-3);
-  font-size: 13px;
+  font-size: 14px;
 }
 .live-dot { width: 10px; height: 10px; border-radius: 50%; background: #7ddc9b; flex: none; }
 .live[data-state="loading"] .live-dot, .live[data-state="refreshing"] .live-dot { background: #ffd27a; }
@@ -118,8 +126,8 @@ button { cursor: pointer; }
 .live[data-state="error"] .live-dot { background: #ff9a92; }
 .live-btn {
   border: 0; border-radius: 999px; background: rgba(255, 255, 255, 0.18); color: #fff;
-  padding: var(--space-1) var(--space-3); min-height: 32px;
-  display: inline-flex; align-items: center; gap: var(--space-1); font-size: 13px; font-weight: 600;
+  padding: var(--space-1) var(--space-3); min-height: 44px;
+  display: inline-flex; align-items: center; gap: var(--space-1); font-size: 14px; font-weight: 600;
 }
 .live-btn:hover { background: rgba(255, 255, 255, 0.3); }
 
@@ -127,7 +135,7 @@ button { cursor: pointer; }
   border: 1px solid transparent;
   border-radius: var(--radius-sm);
   padding: var(--space-2) var(--space-4);
-  min-height: 40px;
+  min-height: 44px;
   background: var(--c-surface);
   color: var(--c-brand);
   font-weight: 600;
@@ -138,18 +146,19 @@ button { cursor: pointer; }
 .btn-primary:hover { background: var(--c-brand-dark); }
 .btn-primary:disabled { opacity: 0.6; cursor: progress; }
 .btn-ghost { background: transparent; border-color: var(--c-border); color: var(--c-text); }
+.btn-small { min-height: 44px; padding: var(--space-1) var(--space-3); font-size: 14px; background: var(--c-surface); border-color: var(--c-border); color: var(--c-text); }
 .note {
   background: var(--c-brand-light);
   color: var(--c-brand-dark);
   padding: var(--space-2) var(--space-5);
-  font-size: 13px;
+  font-size: 14px;
   margin: 0;
 }
 
 /* =========================================================
-   Shell: sidebar navigation + main
+   Shell: grouped sidebar navigation + main
    ========================================================= */
-.shell { display: grid; grid-template-columns: 232px minmax(0, 1fr); align-items: start; }
+.shell { display: grid; grid-template-columns: 248px minmax(0, 1fr); align-items: start; }
 .sidebar {
   position: sticky; top: 0;
   background: var(--c-nav);
@@ -157,183 +166,238 @@ button { cursor: pointer; }
   min-height: 100vh;
   padding: var(--space-4) var(--space-3);
 }
-.nav-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-1); }
+.nav-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-4); }
+.nav-group-label { display: block; margin: 0 var(--space-3) var(--space-1); font-size: 13px; font-weight: 700; color: #a9bbe0; }
+.nav-sub { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-1); }
 .nav-link {
   display: flex; align-items: center; gap: var(--space-3);
-  min-height: 44px; padding: 0 var(--space-3);
+  min-height: 48px; padding: var(--space-1) var(--space-3);
   border-radius: var(--radius-sm);
   color: inherit; text-decoration: none; font-weight: 600;
+  border-left: 4px solid transparent;
 }
 .nav-link:hover { background: rgba(255, 255, 255, 0.1); }
-.nav-link[aria-current="page"] { background: #fff; color: var(--c-brand-dark); }
-.sidebar-foot { margin: var(--space-5) var(--space-3) 0; font-size: 12px; opacity: 0.8; }
+.nav-link[aria-current="page"] { background: #fff; color: var(--c-brand-dark); border-left-color: var(--c-focus-on-dark); }
+.nav-text { display: flex; flex-direction: column; line-height: 1.25; min-width: 0; }
+.nav-hint { font-size: 12px; font-weight: 400; opacity: 0.85; }
+.nav-badge {
+  margin-left: auto; min-width: 24px; text-align: center; padding: 1px var(--space-2);
+  border-radius: 999px; background: var(--c-danger); color: #fff; font-size: 12px; font-weight: 700;
+}
+.nav-badge[hidden] { display: none; }
+.sidebar-foot { margin: var(--space-5) var(--space-3) 0; font-size: 13px; opacity: 0.85; }
 
 main { padding: var(--space-5); min-width: 0; }
+.page { max-width: 1240px; margin: 0 auto; }
 .page-head { margin-bottom: var(--space-4); }
-.page-head h2 { margin: 0; font-size: 22px; }
+.page-head h2 { margin: 0; font-size: 26px; line-height: 1.2; }
 .page-head h2:focus { outline: none; }
 .page-head p { margin: var(--space-1) 0 0; color: var(--c-muted); max-width: 68ch; }
-.section-title { font-size: 17px; margin: 0 0 var(--space-1); }
-.section-hint { margin: 0 0 var(--space-3); color: var(--c-muted); font-size: 13px; }
+.section-title { font-size: 19px; margin: 0 0 var(--space-1); }
+.section-hint { margin: 0 0 var(--space-3); color: var(--c-muted); font-size: 14px; max-width: 72ch; }
 .block { margin-bottom: var(--space-6); }
+.title-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); margin-bottom: var(--space-1); }
+.title-row .section-title { margin: 0; }
+
+.jump { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin: 0 0 var(--space-4); }
+.jump-label { font-size: 14px; color: var(--c-muted); margin-right: var(--space-1); }
+.jump-btn {
+  border: 1px solid var(--c-border); background: var(--c-surface); border-radius: 999px;
+  min-height: 44px; padding: 0 var(--space-4); font-size: 14px; font-weight: 600; color: var(--c-brand-dark);
+}
+.jump-btn:hover { background: var(--c-brand-light); border-color: var(--c-brand); }
 
 /* =========================================================
-   Headline summary (plain language)
+   Hero: the plain-language answer to "how are we doing?"
    ========================================================= */
-.headline {
+.hero {
   background: var(--c-surface);
   border: 1px solid var(--c-border);
-  border-left: 8px solid var(--c-low);
+  border-left: 10px solid var(--c-low);
   border-radius: var(--radius);
-  padding: var(--space-4) var(--space-5);
+  padding: var(--space-5);
   margin-bottom: var(--space-4);
 }
-.headline[data-tone="good"] { border-left-color: var(--c-success); }
-.headline[data-tone="watch"] { border-left-color: var(--c-high); }
-.headline[data-tone="action"] { border-left-color: var(--c-danger); }
-.headline-sentence {
+.hero[data-tone="good"] { border-left-color: var(--c-success); }
+.hero[data-tone="watch"] { border-left-color: var(--c-high); }
+.hero[data-tone="action"] { border-left-color: var(--c-danger); }
+.hero-top { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--space-3) var(--space-5); }
+.hero-sentence {
   margin: 0;
   font-family: var(--font-display);
-  font-size: clamp(24px, 3.4vw, 34px);
-  line-height: 1.2;
+  font-size: clamp(26px, 3.6vw, 38px);
+  line-height: 1.15;
   font-weight: 700;
-  max-width: 28ch;
+  max-width: 24ch;
 }
-.headline-detail { margin: var(--space-2) 0 var(--space-3); color: var(--c-muted); }
-.mix { display: flex; height: 14px; border-radius: 999px; overflow: hidden; background: var(--c-border); gap: 2px; }
+.hero-detail { margin: var(--space-2) 0 0; color: var(--c-muted); max-width: 60ch; }
+.hero-action[hidden] { display: none; }
+.mix { display: flex; height: 28px; border-radius: var(--radius-sm); overflow: hidden; background: var(--c-border); gap: 2px; margin-top: var(--space-4); }
+.mix span { display: flex; align-items: center; justify-content: center; min-width: 0; font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; color: #fff; overflow: hidden; }
 .seg-backlog { background: var(--seg-backlog); }
 .seg-progress { background: var(--seg-progress); }
 .seg-blocked { background: var(--seg-blocked); }
+.mix .seg-blocked { color: #1b1300; }
 .seg-done { background: var(--seg-done); }
-.mix-legend { list-style: none; margin: var(--space-2) 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-4); font-size: 13px; }
+.mix-legend { list-style: none; margin: var(--space-2) 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-4); font-size: 14px; }
 .mix-legend li { display: inline-flex; align-items: center; gap: var(--space-2); }
 .swatch { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
 
 /* =========================================================
-   Privacy banner and KPI cards
+   Sensitivity badges (one vocabulary, used everywhere)
    ========================================================= */
-.privacy-bar {
-  display: flex; align-items: flex-start; gap: var(--space-3);
-  background: var(--c-private-bg); color: #3f1a5a;
-  border: 1px solid #d9bdee; border-radius: var(--radius);
-  padding: var(--space-3) var(--space-4);
-  margin-bottom: var(--space-4);
-  font-size: 14px;
+.pill-level { display: inline-flex; align-items: center; gap: var(--space-1); border-radius: 999px; padding: 2px var(--space-3); font-size: 13px; font-weight: 700; white-space: nowrap; }
+.pill-level .icon { width: 14px; height: 14px; }
+.level-low { background: var(--c-success-bg); color: var(--c-success); }
+.level-personal { background: var(--c-private-bg); color: var(--c-private); }
+.level-conf { background: var(--c-warning-bg); color: var(--c-warning); }
+.level-ext { background: var(--c-danger-bg); color: var(--c-danger); }
+
+.sens-key {
+  background: var(--c-surface);
+  border: 1px solid #d9bdee;
+  border-top: 4px solid var(--c-private);
+  border-radius: var(--radius);
+  padding: var(--space-4) var(--space-5);
+  margin-bottom: var(--space-6);
 }
-.privacy-bar a { color: inherit; font-weight: 700; }
-.kpi-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: var(--space-4);
-  margin: 0 0 var(--space-6);
-  padding: 0;
-  list-style: none;
-}
+.sens-key-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--space-2) var(--space-4); margin-bottom: var(--space-3); }
+.sens-key-head h3 { margin: 0; font-size: 17px; }
+.sens-key-head a { color: var(--c-private); font-weight: 700; display: inline-flex; align-items: center; min-height: 44px; }
+.sens-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-4); }
+.sens-list li { display: flex; flex-direction: column; gap: var(--space-2); align-items: flex-start; }
+.sens-list p { margin: 0; font-size: 14px; color: var(--c-muted); }
+
+/* =========================================================
+   KPI groups and cards
+   ========================================================= */
+.kpi-groups { display: flex; flex-direction: column; gap: var(--space-5); margin: 0 0 var(--space-6); }
+.kpi-group { display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: var(--space-4); align-items: start; }
+.kpi-group-head h4 { margin: 0; font-size: 18px; line-height: 1.25; }
+.kpi-group-head p { margin: var(--space-1) 0 0; font-size: 14px; color: var(--c-muted); }
+.kpi-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: var(--space-4); margin: 0; padding: 0; list-style: none; }
 .kpi {
+  --tone: var(--c-brand);
   background: var(--c-surface);
   border: 1px solid var(--c-border);
+  border-left: 6px solid var(--tone);
   border-radius: var(--radius);
   padding: var(--space-4);
   display: flex; flex-direction: column; gap: var(--space-1);
 }
+.kpi[data-tone="good"] { --tone: var(--c-success); }
+.kpi[data-tone="watch"] { --tone: var(--c-high); }
+.kpi[data-tone="action"] { --tone: var(--c-danger); }
 .kpi-head { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-2); }
-.kpi h3 { margin: 0; font-size: 15px; }
-.kpi-value { margin: var(--space-2) 0 0; display: flex; align-items: baseline; gap: var(--space-2); }
-.kpi-value .num { font-size: 40px; line-height: 1; font-weight: 700; font-variant-numeric: tabular-nums; }
+.kpi h5 { margin: 0; font-size: 16px; }
+.kpi-value { margin: var(--space-2) 0 0; display: flex; align-items: baseline; gap: var(--space-2); flex-wrap: wrap; }
+.kpi-value .num { font-size: 44px; line-height: 1; font-weight: 700; font-variant-numeric: tabular-nums; }
 .kpi-value .unit { color: var(--c-muted); font-size: 14px; }
-.kpi-explain { margin: 0; color: var(--c-muted); font-size: 13px; }
-.kpi-delta { margin: 0; font-size: 12px; color: var(--c-muted); min-height: 18px; }
+.kpi-bar { height: 8px; border-radius: 999px; background: var(--c-border-soft); overflow: hidden; margin: var(--space-2) 0 var(--space-1); }
+.kpi-bar span { display: block; height: 100%; width: calc(var(--frac, 0) * 1%); background: var(--tone); border-radius: 999px; }
+.kpi-ctx { margin: 0; font-size: 14px; font-weight: 600; }
+.kpi-explain { margin: 0; color: var(--c-muted); font-size: 14px; }
+.kpi-rule { margin: 0; color: var(--c-muted); font-size: 13px; }
+.kpi-delta { margin: 0; font-size: 13px; color: var(--c-muted); min-height: 20px; }
 .link-btn {
   margin-top: auto; align-self: flex-start;
-  border: 0; background: none; padding: var(--space-2) 0; min-height: 40px;
+  border: 0; background: none; padding: var(--space-2) 0; min-height: 44px;
   color: var(--c-brand); font-weight: 700; text-decoration: underline;
 }
 .link-btn:hover { color: var(--c-brand-dark); }
 .status {
   display: inline-flex; align-items: center; gap: var(--space-1);
   border-radius: 999px; padding: 2px var(--space-2);
-  font-size: 12px; font-weight: 700; white-space: nowrap;
+  font-size: 13px; font-weight: 700; white-space: nowrap;
 }
 .status[hidden] { display: none; }
 .status-good { background: var(--c-success-bg); color: var(--c-success); }
 .status-watch { background: var(--c-warning-bg); color: var(--c-warning); }
 .status-action { background: var(--c-danger-bg); color: var(--c-danger); }
 .status .icon { width: 14px; height: 14px; }
+.kpi-guide { background: var(--c-brand-light); border: 1px solid #c5d3f2; border-radius: var(--radius); padding: var(--space-4); }
+.kpi-guide h5 { margin: 0 0 var(--space-2); font-size: 16px; }
+.kpi-guide ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-2); font-size: 14px; }
+.kpi-guide li { display: flex; align-items: flex-start; gap: var(--space-2); }
+.kpi-guide .status { flex: none; }
 
 /* =========================================================
    Tables (project / person / classification)
    ========================================================= */
 .table-wrap { overflow-x: auto; background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius); }
-.data-table { width: 100%; border-collapse: collapse; font-size: 14px; }
-.data-table caption { text-align: left; padding: var(--space-3) var(--space-4) 0; font-weight: 700; }
-.data-table th, .data-table td { text-align: left; padding: var(--space-2) var(--space-4); border-bottom: 1px solid var(--c-border); vertical-align: top; }
-.data-table thead th { font-size: 12px; color: var(--c-muted); }
+.data-table { width: 100%; border-collapse: collapse; font-size: 15px; }
+.data-table th, .data-table td { text-align: left; padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--c-border-soft); vertical-align: top; }
+.data-table thead th { font-size: 13px; color: var(--c-muted); background: #f8f9fc; }
 .data-table tbody tr:last-child th, .data-table tbody tr:last-child td { border-bottom: 0; }
 .data-table .num { text-align: right; font-variant-numeric: tabular-nums; }
 .data-table tbody th { font-weight: 600; }
-.split { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: var(--space-4); margin-bottom: var(--space-6); }
-.personal-flag {
-  display: inline-flex; align-items: center; gap: var(--space-1);
-  background: var(--c-private-bg); color: var(--c-private);
-  border-radius: 999px; padding: 2px var(--space-2); font-size: 12px; font-weight: 700;
-}
+.name-cell { display: inline-flex; align-items: center; gap: var(--space-2); }
+.name-cell .icon { color: var(--c-private); }
+.split { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: var(--space-5); margin-bottom: var(--space-6); }
 .panel-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-2); margin-bottom: var(--space-2); }
-.panel-head h3 { margin: 0; font-size: 16px; }
-.btn-small { min-height: 36px; padding: var(--space-1) var(--space-3); font-size: 13px; background: var(--c-surface); border-color: var(--c-border); color: var(--c-text); }
+.panel-head h3 { margin: 0; font-size: 18px; }
+.mask-action { margin: var(--space-3) 0 0; }
+.mask-status { display: flex; align-items: flex-start; gap: var(--space-2); margin: 0 0 var(--space-3); padding: var(--space-2) var(--space-3); border-radius: var(--radius-sm); font-size: 14px; background: var(--c-private-bg); color: #3f1a5a; }
+.mask-status[data-masked="false"] { background: var(--c-warning-bg); color: var(--c-warning); font-weight: 600; }
 .activity { list-style: none; margin: 0; padding: 0; background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius); }
-.activity li { padding: var(--space-2) var(--space-4); border-bottom: 1px solid var(--c-border); display: flex; gap: var(--space-3); }
+.activity li { padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--c-border-soft); display: flex; gap: var(--space-3); }
 .activity li:last-child { border-bottom: 0; }
 .activity time { color: var(--c-muted); font-variant-numeric: tabular-nums; flex: none; }
-.activity .empty-row { color: var(--c-muted); }
-.pill-level { display: inline-flex; align-items: center; gap: var(--space-1); border-radius: 999px; padding: 2px var(--space-2); font-size: 12px; font-weight: 700; white-space: nowrap; }
-.level-low { background: var(--c-success-bg); color: var(--c-success); }
-.level-personal { background: var(--c-private-bg); color: var(--c-private); }
-.level-conf { background: var(--c-warning-bg); color: var(--c-warning); }
-.level-ext { background: var(--c-danger-bg); color: var(--c-danger); }
+.activity .empty-row, .empty-row { color: var(--c-muted); }
 .checklist { margin: 0 0 var(--space-6); padding-left: var(--space-5); max-width: 78ch; }
 .checklist li { margin-bottom: var(--space-2); }
+
+/* The route a task's data takes: a real sequence, so it is numbered */
+.flow { list-style: none; margin: 0 0 var(--space-6); padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-4); counter-reset: step; }
+.flow li { counter-increment: step; background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius); padding: var(--space-4); display: flex; flex-direction: column; gap: var(--space-2); align-items: flex-start; }
+.flow li::before { content: "Step " counter(step); font-size: 13px; font-weight: 700; color: var(--c-muted); }
+.flow h4 { margin: 0; font-size: 16px; }
+.flow p { margin: 0; font-size: 14px; color: var(--c-muted); }
 
 /* =========================================================
    Filter bar
    ========================================================= */
 .filters { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: flex-end; margin-bottom: var(--space-4); }
 .filters .field { display: flex; flex-direction: column; gap: var(--space-1); }
-.filters label { font-size: 12px; color: var(--c-muted); font-weight: 600; }
+.filters label { font-size: 13px; color: var(--c-muted); font-weight: 600; }
 .filters input, .filters select,
 .form-field input, .form-field select, .form-field textarea {
   border: 1px solid var(--c-border);
   border-radius: var(--radius-sm);
   padding: var(--space-2);
-  min-height: 40px;
+  min-height: 44px;
   background: var(--c-surface);
   min-width: 160px;
 }
-.filter-count { font-size: 13px; color: var(--c-muted); align-self: center; }
+.filter-count { font-size: 14px; color: var(--c-muted); align-self: center; }
 .quick-chip {
   display: inline-flex; align-items: center; gap: var(--space-2);
   background: var(--c-brand-light); color: var(--c-brand-dark);
   border-radius: 999px; padding: 2px 2px 2px var(--space-3);
-  font-size: 13px; font-weight: 600; align-self: center;
+  font-size: 14px; font-weight: 600; align-self: center;
 }
-.quick-chip button { border: 0; background: rgba(11, 61, 145, 0.12); border-radius: 50%; width: 28px; height: 28px; font-size: 16px; line-height: 1; }
+.quick-chip button { border: 0; background: rgba(23, 68, 166, 0.14); border-radius: 50%; width: 36px; height: 36px; font-size: 18px; line-height: 1; }
 
 /* =========================================================
    Board and columns
    ========================================================= */
 .board {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: var(--space-4);
   align-items: start;
 }
-.column { background: #e5eaf2; border-radius: var(--radius); padding: var(--space-3); min-height: 200px; border: 2px dashed transparent; }
-.column.is-drop-target { background: var(--c-brand-light); border-color: var(--c-brand); }
+.column { --stage: var(--c-low); background: #e8ecf4; border-radius: var(--radius); border-top: 5px solid var(--stage); padding: var(--space-3); min-height: 200px; outline: 2px dashed transparent; outline-offset: -2px; }
+.column[data-status="In Progress"] { --stage: var(--seg-progress); }
+.column[data-status="Blocked"] { --stage: var(--seg-blocked); }
+.column[data-status="Done"] { --stage: var(--seg-done); }
+.column.is-drop-target { background: var(--c-brand-light); outline-color: var(--c-brand); }
 .column-header { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); margin-bottom: var(--space-3); }
-.column-header h3 { font-size: 15px; margin: 0; }
-.column-header p { margin: 0; font-size: 12px; color: var(--c-muted); }
-.count-badge { background: var(--c-brand); color: #fff; border-radius: 999px; min-width: 26px; text-align: center; padding: 2px var(--space-2); font-size: 12px; font-weight: 700; }
+.column-header h3 { font-size: 16px; margin: 0; }
+.column-header p { margin: 0; font-size: 13px; color: var(--c-muted); }
+.count-badge { background: var(--c-ink); color: #fff; border-radius: 999px; min-width: 28px; text-align: center; padding: 2px var(--space-2); font-size: 13px; font-weight: 700; }
 .card-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-3); }
-.empty { color: var(--c-muted); font-size: 13px; text-align: center; padding: var(--space-4) 0; }
+.empty { color: var(--c-muted); font-size: 14px; text-align: center; padding: var(--space-4) 0; }
 
 /* =========================================================
    Task card
@@ -345,27 +409,27 @@ main { padding: var(--space-5); min-width: 0; }
 .card[data-priority="Medium"] { border-left-color: var(--c-medium); }
 .card[data-priority="Low"] { border-left-color: var(--c-low); }
 .card-top { display: flex; justify-content: space-between; align-items: center; gap: var(--space-2); }
-.task-id { font-size: 12px; font-family: ui-monospace, Menlo, Consolas, monospace; color: var(--c-muted); }
-.card h4 { font-size: 14px; margin: var(--space-1) 0 var(--space-2); word-break: break-word; }
-.meta { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 2px var(--space-2); font-size: 13px; }
+.task-id { font-size: 13px; font-family: ui-monospace, Menlo, Consolas, monospace; color: var(--c-muted); }
+.card h4 { font-size: 15px; margin: var(--space-1) 0 var(--space-2); word-break: break-word; }
+.meta { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 2px var(--space-2); font-size: 14px; }
 .meta dt { color: var(--c-muted); }
 .meta dd { margin: 0; word-break: break-word; }
 .tags { display: flex; flex-wrap: wrap; gap: var(--space-1); margin-top: var(--space-2); }
-.pill, .tag, .overdue { font-size: 12px; font-weight: 600; border-radius: 999px; padding: 1px var(--space-2); }
+.pill, .tag, .overdue { font-size: 13px; font-weight: 600; border-radius: 999px; padding: 1px var(--space-2); }
 .pill { color: #fff; }
 .pill-Critical { background: var(--c-critical); }
 .pill-High { background: var(--c-high); color: #1b1300; }
 .pill-Medium { background: var(--c-medium); }
-.pill-Low { background: var(--c-low); color: #10151f; }
+.pill-Low { background: var(--c-low); color: #fff; }
 .tag { background: var(--c-brand-light); color: var(--c-brand-dark); }
 .overdue { background: var(--c-danger-bg); color: var(--c-danger); border: 1px solid #f3b7b2; }
-.card-actions { display: flex; justify-content: space-between; align-items: center; gap: var(--space-2); margin-top: var(--space-3); padding-top: var(--space-2); border-top: 1px solid var(--c-border); }
-.move { display: flex; align-items: center; gap: var(--space-1); font-size: 13px; color: var(--c-muted); }
-.move select { border: 1px solid var(--c-border); border-radius: var(--radius-sm); padding: 4px var(--space-1); min-height: 36px; background: var(--c-surface); }
-.icon-btn { border: 1px solid transparent; background: transparent; border-radius: var(--radius-sm); width: 36px; height: 36px; font-size: 20px; line-height: 1; color: var(--c-muted); }
+.card-actions { display: flex; justify-content: space-between; align-items: center; gap: var(--space-2); margin-top: var(--space-3); padding-top: var(--space-2); border-top: 1px solid var(--c-border-soft); }
+.move { display: flex; align-items: center; gap: var(--space-1); font-size: 14px; color: var(--c-muted); }
+.move select { border: 1px solid var(--c-border); border-radius: var(--radius-sm); padding: 4px var(--space-1); min-height: 44px; background: var(--c-surface); }
+.icon-btn { border: 1px solid transparent; background: transparent; border-radius: var(--radius-sm); width: 44px; height: 44px; font-size: 22px; line-height: 1; color: var(--c-muted); }
 .icon-btn:hover { background: var(--c-danger-bg); color: var(--c-danger); }
-.confirm { display: flex; align-items: center; gap: var(--space-1); font-size: 13px; color: var(--c-danger); font-weight: 600; }
-.confirm button { border: 1px solid var(--c-border); border-radius: var(--radius-sm); background: var(--c-surface); padding: 4px var(--space-2); min-height: 36px; font-size: 13px; }
+.confirm { display: flex; align-items: center; gap: var(--space-1); font-size: 14px; color: var(--c-danger); font-weight: 600; }
+.confirm button { border: 1px solid var(--c-border); border-radius: var(--radius-sm); background: var(--c-surface); padding: 4px var(--space-2); min-height: 44px; font-size: 14px; }
 .confirm .yes { background: var(--c-danger); color: #fff; border-color: var(--c-danger); }
 
 /* =========================================================
@@ -373,20 +437,20 @@ main { padding: var(--space-5); min-width: 0; }
    ========================================================= */
 .modal-backdrop { position: fixed; inset: 0; background: rgba(10, 20, 40, 0.5); display: flex; align-items: flex-start; justify-content: center; padding: var(--space-6) var(--space-4); overflow-y: auto; z-index: 30; }
 .modal-backdrop[hidden] { display: none; }
-.modal { background: var(--c-surface); border-radius: var(--radius); width: 100%; max-width: 560px; padding: var(--space-5); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25); }
+.modal { background: var(--c-surface); border-radius: var(--radius); width: 100%; max-width: 580px; padding: var(--space-5); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25); }
 .modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-4); }
-.modal-head h2 { margin: 0; font-size: 18px; }
+.modal-head h2 { margin: 0; font-size: 20px; }
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3) var(--space-4); }
 .form-field { display: flex; flex-direction: column; gap: var(--space-1); }
 .form-field.full { grid-column: 1 / -1; }
-.form-field label { font-weight: 600; font-size: 13px; }
+.form-field label { font-weight: 600; font-size: 14px; }
 .form-field input, .form-field select, .form-field textarea { min-width: 0; width: 100%; }
 .form-field textarea { resize: vertical; min-height: 70px; }
-.form-field .hint { font-size: 12px; color: var(--c-muted); }
-.form-field .error { font-size: 13px; color: var(--c-danger); }
+.form-field .hint { font-size: 13px; color: var(--c-muted); }
+.form-field .error { font-size: 14px; color: var(--c-danger); }
 .form-field.has-error input, .form-field.has-error select, .form-field.has-error textarea { border-color: var(--c-danger); }
 .req { color: var(--c-danger); }
-.data-note { display: flex; gap: var(--space-2); align-items: flex-start; margin: var(--space-4) 0 0; padding: var(--space-3); border-radius: var(--radius-sm); background: var(--c-private-bg); color: #3f1a5a; font-size: 13px; }
+.data-note { display: flex; gap: var(--space-2); align-items: flex-start; margin: var(--space-4) 0 0; padding: var(--space-3); border-radius: var(--radius-sm); background: var(--c-danger-bg); color: #6b1610; font-size: 14px; }
 .form-actions { display: flex; justify-content: flex-end; gap: var(--space-2); margin-top: var(--space-5); }
 
 /* =========================================================
@@ -434,8 +498,9 @@ main { padding: var(--space-5); min-width: 0; }
    Motion: only when the user has not asked to reduce it
    ========================================================= */
 @media (prefers-reduced-motion: no-preference) {
-  .column { transition: background 0.15s, border-color 0.15s; }
-  .btn, .nav-link, .live-btn { transition: background 0.15s; }
+  .column { transition: background 0.15s, outline-color 0.15s; }
+  .btn, .nav-link, .live-btn, .jump-btn { transition: background 0.15s, border-color 0.15s; }
+  .kpi-bar span { transition: width 0.4s ease-out; }
   .live[data-state="refreshing"] .live-dot { animation: pulse 0.8s ease-in-out infinite alternate; }
   @keyframes pulse { from { opacity: 1; } to { opacity: 0.3; } }
 }
@@ -443,6 +508,9 @@ main { padding: var(--space-5); min-width: 0; }
 /* =========================================================
    Responsive: sidebar becomes a bottom bar below 900px
    ========================================================= */
+@media (max-width: 1099px) {
+  .kpi-group { grid-template-columns: minmax(0, 1fr); gap: var(--space-2); }
+}
 @media (max-width: 899px) {
   .app-header, .note { padding-left: var(--space-4); padding-right: var(--space-4); }
   .shell { display: block; }
@@ -450,18 +518,25 @@ main { padding: var(--space-5); min-width: 0; }
     position: fixed; top: auto; bottom: 0; left: 0; right: 0; z-index: 20;
     min-height: 0; padding: var(--space-1) var(--space-2) calc(var(--space-1) + env(safe-area-inset-bottom));
   }
-  .nav-list { flex-direction: row; justify-content: space-around; }
-  .nav-link { flex-direction: column; justify-content: center; gap: 2px; min-height: 52px; padding: 0 var(--space-2); font-size: 12px; text-align: center; }
-  .sidebar-foot { display: none; }
-  main { padding: var(--space-4) var(--space-4) 88px; }
+  .nav-list { flex-direction: row; justify-content: space-around; gap: 0; }
+  .nav-list > li, .nav-sub { display: contents; }
+  .nav-group-label, .nav-hint, .sidebar-foot { display: none; }
+  .nav-link { flex-direction: column; justify-content: center; gap: 2px; min-height: 56px; padding: 0 var(--space-2); font-size: 13px; text-align: center; position: relative; border-left: 0; border-top: 4px solid transparent; }
+  .nav-link[aria-current="page"] { border-top-color: var(--c-focus-on-dark); }
+  .nav-text { align-items: center; }
+  .nav-badge { position: absolute; top: 2px; right: 2px; margin: 0; }
+  main { padding: var(--space-4) var(--space-4) 96px; }
   .toasts { bottom: 156px; }
   .support { right: var(--space-4); bottom: 84px; }
+  .support-list { max-height: calc(100vh - 450px); }
   .form-grid { grid-template-columns: 1fr; }
   .filters .field, .filters input, .filters select { width: 100%; }
+  .hero { padding: var(--space-4); }
 }
 </style>
 </head>
 <body>
+<a class="skip-link" href="#main">Skip to main content</a>
 
 <!-- =========================================================
      Header: wordmark, live-refresh status, Add Task
@@ -479,14 +554,15 @@ main { padding: var(--space-5); min-width: 0; }
 
 <div class="shell">
   <!-- =======================================================
-       Navigation (built from VIEWS)
+       Navigation (built from VIEWS, grouped)
        ======================================================= -->
   <nav class="sidebar" aria-label="Main">
     <ul class="nav-list" id="nav"></ul>
     <p class="sidebar-foot">Figures refresh every 5 seconds from a simulated in-page source.</p>
   </nav>
 
-  <main id="main">
+  <main id="main" tabindex="-1">
+   <div class="page">
     <div class="page-head">
       <h2 id="view-title" tabindex="-1"></h2>
       <p id="view-blurb"></p>
@@ -495,23 +571,50 @@ main { padding: var(--space-5); min-width: 0; }
     <!-- Announces meaningful changes only, not every refresh -->
     <p class="visually-hidden" id="live-announce" role="status" aria-live="polite"></p>
 
-    <!-- Headline in plain language (combined, kpis) -->
-    <section class="headline" id="headline" data-views="combined kpis" data-tone="neutral" aria-labelledby="headline-sentence">
-      <p class="headline-sentence" id="headline-sentence">Loading…</p>
-      <p class="headline-detail" id="headline-detail"></p>
+    <!-- Jump links for the long combined page (buttons, so the URL hash stays a view name) -->
+    <nav class="jump" data-views="combined" aria-label="On this page">
+      <span class="jump-label">Jump to</span>
+      <button type="button" class="jump-btn" data-jump="headline">Summary</button>
+      <button type="button" class="jump-btn" data-jump="kpi-heading">Key figures</button>
+      <button type="button" class="jump-btn" data-jump="board-heading">Task board</button>
+      <button type="button" class="jump-btn" data-jump="sens-heading">Sensitive data</button>
+    </nav>
+
+    <!-- Hero: the answer in plain language (combined, kpis) -->
+    <section class="hero" id="headline" data-views="combined kpis" data-tone="neutral" aria-labelledby="headline-sentence" tabindex="-1">
+      <div class="hero-top">
+        <div>
+          <p class="hero-sentence" id="headline-sentence">Loading…</p>
+          <p class="hero-detail" id="headline-detail"></p>
+        </div>
+        <button type="button" class="btn btn-primary hero-action" id="hero-action" data-quick="attention" hidden>Show tasks that need attention</button>
+      </div>
       <div class="mix" id="mix" role="img" aria-label="Share of tasks by stage"></div>
       <ul class="mix-legend" id="mix-legend"></ul>
     </section>
 
-    <!-- KPI cards (combined, kpis) -->
+    <!-- What is sensitive on this page (combined, kpis) -->
+    <section class="sens-key" data-views="combined kpis" aria-labelledby="sens-heading">
+      <div class="sens-key-head">
+        <h3 id="sens-heading" tabindex="-1">What is sensitive on this page</h3>
+        <a href="#privacy">How sensitive data is handled</a>
+      </div>
+      <ul class="sens-list">
+        <li><span data-sens="low" data-sens-label="Counts only"></span><p>Key figures and the project table. Numbers only, with no names or text.</p></li>
+        <li><span data-sens="personal"></span><p>Staff names in the person table. Shown as initials unless you choose to show them.</p></li>
+        <li><span data-sens="conf"></span><p>Task titles and descriptions on board cards. Never used in the figures.</p></li>
+        <li><span data-sens="ext"></span><p>The new-task email goes to FormSubmit, an outside service.</p></li>
+      </ul>
+    </section>
+
+    <!-- KPI groups (combined, kpis) -->
     <section class="block" data-views="combined kpis" aria-labelledby="kpi-heading">
-      <h3 class="section-title" id="kpi-heading">Key figures</h3>
-      <p class="section-hint">Each card answers one question. Select “Show these tasks” to see the matching cards on the board.</p>
-      <p class="privacy-bar">
-        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" id="privacy-bar-icon"></svg>
-        <span>These figures are counts only. No names, task titles or descriptions are used in the analytics. <a href="#privacy">How sensitive data is handled</a></span>
-      </p>
-      <ul class="kpi-grid" id="kpi-grid" aria-busy="true"></ul>
+      <div class="title-row">
+        <h3 class="section-title" id="kpi-heading" tabindex="-1">Key figures</h3>
+        <span data-sens="low" data-sens-label="Counts only"></span>
+      </div>
+      <p class="section-hint">Each card answers one question in plain words. Select “Show these tasks” to see the matching cards on the board.</p>
+      <div class="kpi-groups" id="kpi-grid" aria-busy="true"></div>
     </section>
 
     <!-- Filter bar (combined, board) -->
@@ -535,8 +638,11 @@ main { padding: var(--space-5); min-width: 0; }
 
     <!-- Kanban board (combined, board) -->
     <section class="block" id="board-section" data-views="combined board" aria-labelledby="board-heading">
-      <h3 class="section-title" id="board-heading">Task board</h3>
-      <p class="section-hint">Drag a card to another column, or use the Move menu on the card.</p>
+      <div class="title-row">
+        <h3 class="section-title" id="board-heading" tabindex="-1">Task board</h3>
+        <span data-sens="conf" data-sens-label="Confidential: titles and descriptions"></span>
+      </div>
+      <p class="section-hint">Drag a card to another column, or use the Move menu on the card. Card text is not used in any figure.</p>
       <div class="board" id="board"></div>
     </section>
 
@@ -544,7 +650,10 @@ main { padding: var(--space-5); min-width: 0; }
     <div data-views="kpis">
       <div class="split">
         <section aria-labelledby="proj-heading">
-          <div class="panel-head"><h3 id="proj-heading">Work by project</h3></div>
+          <div class="panel-head">
+            <h3 id="proj-heading">Work by project</h3>
+            <span data-sens="low" data-sens-label="Counts only"></span>
+          </div>
           <div class="table-wrap">
             <table class="data-table">
               <thead><tr><th scope="col">Project</th><th scope="col" class="num">Open</th><th scope="col" class="num">Overdue</th><th scope="col" class="num">Blocked</th><th scope="col" class="num">Done</th></tr></thead>
@@ -555,19 +664,23 @@ main { padding: var(--space-5); min-width: 0; }
         <section aria-labelledby="person-heading">
           <div class="panel-head">
             <h3 id="person-heading">Open work by person</h3>
-            <button type="button" class="btn btn-small" id="mask-toggle" aria-pressed="false"></button>
+            <span class="pill-level level-personal" id="person-flag"></span>
           </div>
-          <p class="section-hint"><span class="personal-flag" id="person-flag"></span> Names are personal data, so they are shortened to initials unless you choose to show them.</p>
+          <p class="mask-status" id="mask-status" role="status"></p>
           <div class="table-wrap">
             <table class="data-table">
               <thead><tr><th scope="col">Person</th><th scope="col" class="num">Open</th><th scope="col" class="num">Overdue</th></tr></thead>
               <tbody id="person-rows"></tbody>
             </table>
           </div>
+          <p class="mask-action"><button type="button" class="btn btn-small" id="mask-toggle" aria-pressed="false"></button></p>
         </section>
       </div>
       <section class="block" aria-labelledby="changes-heading">
-        <h3 class="section-title" id="changes-heading">What changed since you opened this page</h3>
+        <div class="title-row">
+          <h3 class="section-title" id="changes-heading">What changed since you opened this page</h3>
+          <span data-sens="low" data-sens-label="IDs and stages only"></span>
+        </div>
         <p class="section-hint">Shows task IDs and stages only, never titles or descriptions.</p>
         <ul class="activity" id="activity"></ul>
       </section>
@@ -575,6 +688,16 @@ main { padding: var(--space-5); min-width: 0; }
 
     <!-- Data privacy (privacy) -->
     <div data-views="privacy">
+      <section class="block" aria-labelledby="flow-heading">
+        <h3 class="section-title" id="flow-heading">Where a task's data goes</h3>
+        <p class="section-hint">Follow one task from the moment you type it. The badge shows how sensitive the data is at each step.</p>
+        <ol class="flow">
+          <li><h4>You add a task</h4><span data-sens="conf" data-sens-label="Confidential"></span><p>The form blocks card numbers, national IDs, emails and passwords before anything is saved.</p></li>
+          <li><h4>It sits in browser memory</h4><span data-sens="low" data-sens-label="Not stored"></span><p>Nothing is written to the browser. A refresh clears the board.</p></li>
+          <li><h4>The figures count it</h4><span data-sens="low" data-sens-label="Counts only"></span><p>Analytics see the stage and priority only. Titles and descriptions are never used.</p></li>
+          <li><h4>An email notice is sent</h4><span data-sens="ext"></span><p>Title, description and assignee go to FormSubmit. Use an approved internal channel for real work.</p></li>
+        </ol>
+      </section>
       <section class="block" aria-labelledby="class-heading">
         <h3 class="section-title" id="class-heading">What this dashboard handles</h3>
         <div class="table-wrap">
@@ -588,7 +711,7 @@ main { padding: var(--space-5); min-width: 0; }
         <h3 class="section-title" id="rules-heading">Rules for analytics</h3>
         <ul class="checklist">
           <li>Analytics use counts and percentages only. Titles, descriptions and email text are never used.</li>
-          <li>Staff names are masked as initials by default. Showing them is a deliberate click and is not remembered.</li>
+          <li>Staff names are masked as initials by default. Showing them is a deliberate click, hides again after 60 seconds or when you leave the KPIs page, and is not remembered.</li>
           <li>The Add Task form blocks text that looks like a card number, national ID, email address or password.</li>
           <li>Nothing is saved in the browser. Closing or refreshing the page clears everything.</li>
         </ul>
@@ -604,6 +727,7 @@ main { padding: var(--space-5); min-width: 0; }
         </ul>
       </section>
     </div>
+   </div>
   </main>
 </div>
 
@@ -692,7 +816,6 @@ main { padding: var(--space-5); min-width: 0; }
 
 <!-- Toast region, announced politely to screen readers -->
 <div class="toasts" id="toasts" aria-live="polite" aria-atomic="false"></div>
-
 <!--
   FormSubmit setup: FormSubmit requires a one-time activation per email address.
   The first submission to a new address sends a confirmation email to that address;
@@ -739,13 +862,13 @@ const CATEGORIES = [
 const PRIORITIES = ["Critical", "High", "Medium", "Low"];
 
 const VIEWS = [
-  { key: "combined", label: "Combined view", icon: "layout", title: "Combined view",
+  { key: "combined", group: "Overview", label: "Combined view", hint: "Summary, figures and board", icon: "layout", title: "Combined view",
     blurb: "The headline, the key figures and the task board on one page." },
-  { key: "board", label: "Task board", icon: "board", title: "Task board",
+  { key: "board", group: "Details", label: "Task board", hint: "Move and add tasks", icon: "board", title: "Task board",
     blurb: "Every task by stage. Drag cards between columns or use the Move menu." },
-  { key: "kpis", label: "KPIs and trends", icon: "chart", title: "KPIs and trends",
+  { key: "kpis", group: "Details", label: "KPIs and trends", hint: "Figures, people, changes", icon: "chart", title: "KPIs and trends",
     blurb: "How delivery is going, by project and by person, with the latest changes." },
-  { key: "privacy", label: "Data privacy", icon: "shield", title: "Sensitive data and privacy",
+  { key: "privacy", group: "Governance", label: "Data privacy", hint: "What is sensitive and why", icon: "shield", title: "Sensitive data and privacy",
     blurb: "What information this dashboard handles and how it is protected." },
 ];
 
@@ -753,7 +876,16 @@ const VIEWS = [
 const QUICK_FILTERS = {
   overdue: { label: "Overdue tasks", test: (t) => isOverdue(t) },
   blocked: { label: "Blocked tasks", test: (t) => t.status === "Blocked" },
+  attention: { label: "Overdue or blocked tasks", test: (t) => t.status !== "Done" && (isOverdue(t) || t.status === "Blocked") },
   urgent: { label: "Critical or high priority, still open", test: (t) => t.status !== "Done" && (t.priority === "Critical" || t.priority === "High") },
+};
+
+// One badge vocabulary for sensitive data, reused on every view
+const SENSITIVITY = {
+  low: { label: "Counts only", icon: "check" },
+  personal: { label: "Personal data", icon: "user" },
+  conf: { label: "Confidential", icon: "lock" },
+  ext: { label: "Leaves the bank", icon: "out" },
 };
 
 // How sensitive each kind of information is (drives the Data privacy page)
@@ -785,9 +917,17 @@ const ICONS = {
   chat: '<path d="M21 11.5a8.4 8.4 0 01-12.4 7.4L3 20.5l1.7-5.3A8.4 8.4 0 1121 11.5z"/><path d="M9 8.5c0 3.5 3 6.5 6.5 6.5l1.2-1.6-2.3-1.1-.9.9a4.600 4.600 0 01-2-2l.9-.9L11.300 7.700z"/>',
   close: '<path d="M6 6l12 12M18 6L6 18"/>',
   user: '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/>',
+  lock: '<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/>',
+  out: '<path d="M7 17L17 7M9 7h8v8"/>',
+  check: '<path d="M5 12l5 5 9-10"/>',
 };
 function icon(name) {
   return `<svg class="icon" viewBox="0 0 24 24" aria-hidden="true">${ICONS[name] || ""}</svg>`;
+}
+// Sensitivity badge: icon + words, never colour alone
+function sensHtml(level, label) {
+  const s = SENSITIVITY[level];
+  return `<span class="pill-level level-${level}">${icon(s.icon)}${escapeHtml(label || s.label)}</span>`;
 }
 function setIcon(svgId, name) {
   document.getElementById(svgId).innerHTML = ICONS[name];
@@ -831,7 +971,7 @@ const state = {
 };
 
 function nextTaskId() {
-  const id = "UOB-ITPM-" + String(state.nextId).padStart(4, "0");
+  const id = "DEMO-ITPM-" + String(state.nextId).padStart(4, "0");
   state.nextId += 1;
   return id;
 }
@@ -1064,34 +1204,73 @@ const api = {
 /* =========================================================
    KPI definitions: plain-language question, one number, one sentence
    ========================================================= */
+const KPI_GROUPS = [
+  { title: "How much work is there?", hint: "The size of the job right now.", keys: ["open", "done"] },
+  { title: "What needs attention?", hint: "Work that is late, stuck or urgent.", keys: ["overdue", "blocked", "urgent"] },
+  { title: "Are we on track?", hint: "The overall picture in one number.", keys: ["ontrack"], guide: true },
+];
+// frac: 0-100 for the bar; ctx: the number in context; rule: when the status changes
 const KPI_DEFS = [
   { key: "open", label: "Work in progress", unit: "open tasks", explain: "Tasks that are not finished yet.",
-    read: (k) => ({ value: k.open }) },
+    read: (k) => ({ value: k.open, frac: k.total ? (k.open / k.total) * 100 : 0, ctx: `${k.open} of ${k.total} ${plural(k.total, "task", "tasks")} in total` }) },
   { key: "done", label: "Finished so far", unit: "of all tasks", explain: "Share of all tasks that are complete.", pct: true,
-    read: (k) => ({ value: k.donePct, text: `${k.donePct}%` }) },
+    read: (k) => ({ value: k.donePct, text: `${k.donePct}%`, frac: k.donePct, ctx: `${k.counts.Done} of ${k.total} ${plural(k.total, "task", "tasks")} done` }) },
   { key: "overdue", label: "Running late", unit: "overdue tasks", explain: "Past their due date and not finished.", quick: "overdue",
-    read: (k) => ({ value: k.overdue, tone: k.overdue === 0 ? "good" : k.overdue === 1 ? "watch" : "action" }) },
+    rule: "Keep an eye at 1. Needs action at 2 or more.",
+    read: (k) => ({ value: k.overdue, frac: k.open ? (k.overdue / k.open) * 100 : 0, ctx: `${k.overdue} of ${k.open} open ${plural(k.open, "task", "tasks")}`, tone: k.overdue === 0 ? "good" : k.overdue === 1 ? "watch" : "action" }) },
   { key: "blocked", label: "Stuck", unit: "blocked tasks", explain: "Waiting on a vendor, an approval or another team.", quick: "blocked",
-    read: (k) => ({ value: k.blocked, tone: k.blocked === 0 ? "good" : k.blocked === 1 ? "watch" : "action" }) },
+    rule: "Keep an eye at 1. Needs action at 2 or more.",
+    read: (k) => ({ value: k.blocked, frac: k.open ? (k.blocked / k.open) * 100 : 0, ctx: `${k.blocked} of ${k.open} open ${plural(k.open, "task", "tasks")}`, tone: k.blocked === 0 ? "good" : k.blocked === 1 ? "watch" : "action" }) },
   { key: "urgent", label: "Urgent work still open", unit: "critical or high", explain: "Top-priority tasks that are not done.", quick: "urgent",
-    read: (k) => ({ value: k.urgent, tone: k.urgent === 0 ? "good" : k.urgent <= 3 ? "watch" : "action" }) },
+    rule: "Keep an eye up to 3. Needs action at 4 or more.",
+    read: (k) => ({ value: k.urgent, frac: k.open ? (k.urgent / k.open) * 100 : 0, ctx: `${k.urgent} of ${k.open} open ${plural(k.open, "task", "tasks")}`, tone: k.urgent === 0 ? "good" : k.urgent <= 3 ? "watch" : "action" }) },
   { key: "ontrack", label: "On track", unit: "of open tasks", explain: "Open tasks that are neither overdue nor blocked.", pct: true,
-    read: (k) => ({ value: k.onTrackPct, text: `${k.onTrackPct}%`, tone: k.onTrackPct >= 80 ? "good" : k.onTrackPct >= 60 ? "watch" : "action" }) },
+    rule: "On track at 80% or more. Keep an eye from 60%.",
+    read: (k) => ({ value: k.onTrackPct, text: `${k.onTrackPct}%`, frac: k.onTrackPct, ctx: `${k.open - k.attention} of ${k.open} open ${plural(k.open, "task", "tasks")}`, tone: k.onTrackPct >= 80 ? "good" : k.onTrackPct >= 60 ? "watch" : "action" }) },
 ];
 const TONE_TEXT = { good: "On track", watch: "Keep an eye", action: "Needs action" };
 
-function buildKpiGrid() {
-  document.getElementById("kpi-grid").innerHTML = KPI_DEFS.map((d) => `
+function kpiCardHtml(d) {
+  return `
     <li class="kpi" data-kpi="${d.key}">
       <div class="kpi-head">
-        <h4 id="kpi-${d.key}-label">${escapeHtml(d.label)}</h4>
+        <h5 id="kpi-${d.key}-label">${escapeHtml(d.label)}</h5>
         <span class="status" hidden></span>
       </div>
       <p class="kpi-value"><span class="num" aria-labelledby="kpi-${d.key}-label">–</span><span class="unit">${escapeHtml(d.unit)}</span></p>
+      <div class="kpi-bar" aria-hidden="true"><span></span></div>
+      <p class="kpi-ctx"></p>
       <p class="kpi-explain">${escapeHtml(d.explain)}</p>
+      ${d.rule ? `<p class="kpi-rule">${escapeHtml(d.rule)}</p>` : ""}
       <p class="kpi-delta"></p>
       ${d.quick ? `<button type="button" class="link-btn" data-quick="${d.quick}">Show these tasks</button>` : ""}
-    </li>`).join("");
+    </li>`;
+}
+
+function kpiGuideHtml() {
+  return `
+    <li class="kpi-guide">
+      <h5>How to read the status</h5>
+      <ul>
+        <li><span class="status status-good">${icon("good")}${TONE_TEXT.good}</span>Nothing to do.</li>
+        <li><span class="status status-watch">${icon("watch")}${TONE_TEXT.watch}</span>Look at it this week.</li>
+        <li><span class="status status-action">${icon("action")}${TONE_TEXT.action}</span>Someone should act now.</li>
+      </ul>
+    </li>`;
+}
+
+function buildKpiGrid() {
+  document.getElementById("kpi-grid").innerHTML = KPI_GROUPS.map((g, i) => `
+    <section class="kpi-group" aria-labelledby="kpi-group-${i}">
+      <div class="kpi-group-head">
+        <h4 id="kpi-group-${i}">${escapeHtml(g.title)}</h4>
+        <p>${escapeHtml(g.hint)}</p>
+      </div>
+      <ul class="kpi-cards">
+        ${g.keys.map((key) => kpiCardHtml(KPI_DEFS.find((d) => d.key === key))).join("")}
+        ${g.guide ? kpiGuideHtml() : ""}
+      </ul>
+    </section>`).join("");
 }
 
 function updateKpis(k, prev) {
@@ -1099,7 +1278,10 @@ function updateKpis(k, prev) {
     const card = document.querySelector(`[data-kpi="${d.key}"]`);
     const now = d.read(k);
     card.querySelector(".num").textContent = now.text ?? String(now.value);
+    card.querySelector(".kpi-bar span").style.setProperty("--frac", String(Math.round(now.frac)));
+    card.querySelector(".kpi-ctx").textContent = now.ctx;
 
+    if (now.tone) card.dataset.tone = now.tone; else delete card.dataset.tone;
     const chip = card.querySelector(".status");
     chip.hidden = !now.tone;
     if (now.tone) {
@@ -1141,10 +1323,11 @@ function renderHeadline(k) {
   el.dataset.tone = tone;
   document.getElementById("headline-sentence").textContent = sentence;
   document.getElementById("headline-detail").textContent = detail;
+  document.getElementById("hero-action").hidden = k.attention === 0;
 
   document.getElementById("mix").innerHTML = STATUSES
     .filter((s) => k.counts[s.key] > 0)
-    .map((s) => `<span class="seg-${s.seg}" style="flex:${k.counts[s.key]}"></span>`).join("");
+    .map((s) => `<span class="seg-${s.seg}" style="flex:${k.counts[s.key]}" aria-hidden="true">${k.counts[s.key]}</span>`).join("");
   document.getElementById("mix").setAttribute("aria-label",
     "Tasks by stage: " + STATUSES.map((s) => `${s.key} ${k.counts[s.key]}`).join(", "));
   document.getElementById("mix-legend").innerHTML = STATUSES.map((s) =>
@@ -1158,7 +1341,7 @@ function renderWorkload(w) {
 
   document.getElementById("person-rows").innerHTML = w.byPerson.length
     ? w.byPerson.map((p) => `
-      <tr><th scope="row">${escapeHtml(state.maskNames ? maskName(p.name) : p.name)}</th>
+      <tr><th scope="row"><span class="name-cell">${icon(state.maskNames ? "lock" : "eye")}${escapeHtml(state.maskNames ? maskName(p.name) : p.name)}</span></th>
         <td class="num">${p.open}</td><td class="num">${p.overdue}</td></tr>`).join("")
     : '<tr><td colspan="3" class="empty-row">No open work.</td></tr>';
 }
@@ -1170,11 +1353,44 @@ function renderActivity() {
     : '<li><span class="empty-row">No changes yet. Move a card and it will appear here at the next update.</span></li>';
 }
 
+let maskTimer = null;
+const MASK_REVEAL_MS = 60000;
+
 function renderMaskToggle() {
   const btn = document.getElementById("mask-toggle");
   btn.innerHTML = state.maskNames ? `${icon("eye")}Show full names` : `${icon("eyeoff")}Hide names`;
   btn.setAttribute("aria-pressed", String(!state.maskNames));
   document.getElementById("person-flag").innerHTML = `${icon("user")}Personal data`;
+  const status = document.getElementById("mask-status");
+  status.dataset.masked = String(state.maskNames);
+  status.innerHTML = state.maskNames
+    ? `${icon("lock")}<span>Names are hidden and shown as initials.</span>`
+    : `${icon("eye")}<span>Full names are on screen. They hide again after 60 seconds or when you leave this page.</span>`;
+}
+
+// Put the mask back (timer, leaving the page). Never persisted.
+function hideNames(message) {
+  clearTimeout(maskTimer);
+  if (state.maskNames) return;
+  state.maskNames = true;
+  renderMaskToggle();
+  refreshNow();
+  if (message) showToast(message, "info");
+}
+
+function toggleNames() {
+  clearTimeout(maskTimer);
+  state.maskNames = !state.maskNames;
+  renderMaskToggle();
+  refreshNow();
+  if (!state.maskNames) maskTimer = setTimeout(() => hideNames("Names hidden again"), MASK_REVEAL_MS);
+}
+
+function updateNavBadge(k) {
+  const badge = document.querySelector('[data-nav-badge="kpis"]');
+  if (!badge) return;
+  badge.hidden = k.attention === 0;
+  badge.innerHTML = `${k.attention}<span class="visually-hidden"> ${plural(k.attention, "task needs", "tasks need")} attention</span>`;
 }
 
 /* =========================================================
@@ -1217,6 +1433,7 @@ async function refresh() {
     updateKpis(kpis, live.prevKpis);
     renderWorkload(workload);
     renderActivity();
+    updateNavBadge(kpis);
     announceChange(kpis, live.prevKpis);
 
     live.prevKpis = kpis;
@@ -1299,13 +1516,23 @@ function viewFromHash() {
 }
 
 function buildNav() {
-  document.getElementById("nav").innerHTML = VIEWS.map((v) => `
-    <li><a class="nav-link" href="#${v.key}" data-view="${v.key}">${icon(v.icon)}<span>${escapeHtml(v.label)}</span></a></li>`).join("");
+  const groups = [...new Set(VIEWS.map((v) => v.group))];
+  document.getElementById("nav").innerHTML = groups.map((g, i) => `
+    <li>
+      <span class="nav-group-label" id="nav-group-${i}">${escapeHtml(g)}</span>
+      <ul class="nav-sub" aria-labelledby="nav-group-${i}">
+        ${VIEWS.filter((v) => v.group === g).map((v) => `
+          <li><a class="nav-link" href="#${v.key}" data-view="${v.key}">${icon(v.icon)}
+            <span class="nav-text"><span>${escapeHtml(v.label)}</span><span class="nav-hint">${escapeHtml(v.hint)}</span></span>
+            <span class="nav-badge" data-nav-badge="${v.key}" hidden></span></a></li>`).join("")}
+      </ul>
+    </li>`).join("");
 }
 
 function setView(key, focusTitle) {
   const view = VIEWS.find((v) => v.key === key) || VIEWS[0];
   state.view = view.key;
+  if (view.key !== "kpis") hideNames("Names hidden again");
   document.querySelectorAll("[data-views]").forEach((el) => {
     el.hidden = !el.dataset.views.split(" ").includes(view.key);
   });
@@ -1382,7 +1609,7 @@ async function notifyNewTask(task) {
     method: "POST",
     headers: { "Content-Type": "application/json", Accept: "application/json" },
     body: JSON.stringify({
-      _subject: `[UOB IT PMO] New task ${task.id}: ${task.title}`,
+      _subject: `[IT PMO Demo] New task ${task.id}: ${task.title}`,
       _template: "table",
       _captcha: "false",
       "Task ID": task.id,
@@ -1663,7 +1890,6 @@ function init() {
   form.elements.priority.innerHTML = optionsHtml(PRIORITIES, "Medium");
   form.elements.status.innerHTML = optionsHtml(STATUSES.map((s) => s.key), "Backlog");
 
-  setIcon("privacy-bar-icon", "shield");
   setIcon("data-note-icon", "shield");
   document.getElementById("open-add").innerHTML = `${icon("plus")}Add task`;
 
@@ -1672,7 +1898,7 @@ function init() {
   renderMaskToggle();
   document.getElementById("class-rows").innerHTML = DATA_CLASSES.map((c) => `
     <tr><th scope="row">${escapeHtml(c.what)}</th><td>${escapeHtml(c.where)}</td>
-      <td><span class="pill-level level-${c.level}">${escapeHtml(c.levelLabel)}</span></td><td>${escapeHtml(c.how)}</td></tr>`).join("");
+      <td>${sensHtml(c.level, c.levelLabel)}</td><td>${escapeHtml(c.how)}</td></tr>`).join("");
 
   const board = document.getElementById("board");
   bindDragAndDrop(board);
@@ -1681,14 +1907,20 @@ function init() {
   bindLive();
   bindSupportWidget();
 
-  document.getElementById("kpi-grid").addEventListener("click", (e) => {
-    const btn = e.target.closest("button[data-quick]");
-    if (btn) drillInto(btn.dataset.quick);
+  document.querySelectorAll("[data-sens]").forEach((el) => { el.outerHTML = sensHtml(el.dataset.sens, el.dataset.sensLabel); });
+  document.getElementById("main").addEventListener("click", (e) => {
+    const quick = e.target.closest("button[data-quick]");
+    if (quick) { drillInto(quick.dataset.quick); return; }
+    const jump = e.target.closest("button[data-jump]");
+    if (jump) {
+      const target = document.getElementById(jump.dataset.jump);
+      if (!target) return;
+      target.scrollIntoView({ block: "start" });
+      target.focus({ preventScroll: true });
+    }
   });
   document.getElementById("mask-toggle").addEventListener("click", () => {
-    state.maskNames = !state.maskNames;
-    renderMaskToggle();
-    refreshNow();
+    toggleNames();
     document.getElementById("mask-toggle").focus();
   });
   window.addEventListener("hashchange", () => setView(viewFromHash(), true));

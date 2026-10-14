@@ -3,7 +3,7 @@
    Shows a dialog once, after the visitor has spent 10 seconds on the page.
    - Counts only time the tab is visible (the clock pauses while it is hidden).
    - Uses a native <dialog>, so focus is trapped, Esc closes it and focus
-     returns to where the visitor was. No alert(), no storage, no network.
+     returns to where the visitor was. No browser alert box, no storage, no network.
    - Self-contained: it adds its own styles and markup. Edit the CONFIG below.
    ========================================================= */
 (function () {
