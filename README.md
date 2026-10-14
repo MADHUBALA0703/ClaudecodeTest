@@ -2,7 +2,7 @@
 
 A demo control room for the IT Project Management Office of a **fictitious bank**, built as a training tool. It combines plain-language KPIs with a Kanban board. The whole app is one file, `index.html`, written in plain HTML, CSS and JavaScript. It has no build step, no dependencies and no server.
 
-**Live demo:** https://madhubala0703.github.io/it-pmo-control-room/
+**Live demo:** https://madhubala0703.github.io/ClaudecodeTest/
 
 ![IT PMO Control Room screenshot](docs/screenshot.png)
 
@@ -48,6 +48,7 @@ FormSubmit needs a one-time activation. The first submission sends a confirmatio
 
 - **Nothing is saved, on purpose.** Tasks live only in memory, and refreshing the page resets the board to the sample data.
 - The only network request is the optional FormSubmit call. The IT support widget only contains links that open WhatsApp in a new tab when clicked. The 5-second refresh reads from the page's own in-memory data and makes no request.
+- The WhatsApp number in `SUPPORT_WHATSAPP` is public in the page source and on the live site.
 - New-task emails go to an external service. Do not enter real customer or confidential information.
 
 ## Deployment
