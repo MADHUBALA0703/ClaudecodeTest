@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-A demo IT PMO control room (combined KPI + Kanban view) for a fictitious bank, used as a training tool. The whole app is one file, `index.html`, with inline `<style>` and `<script>`. There is no build, package manager, linter or test suite.
+A demo IT PMO control room (combined KPI + Kanban view) for a fictitious bank, used as a training tool. The whole app is one file, `index.html`, with inline `<style>` and `<script>` (plus one small hook script, see below). There is no build, package manager, linter or test suite.
 
 ## Hard constraints (from the original spec; keep them)
 
@@ -13,7 +13,7 @@ A demo IT PMO control room (combined KPI + Kanban view) for a fictitious bank, u
 - No persistence of any kind: no localStorage, sessionStorage, IndexedDB or cookies. A refresh resets the board to the seed data on purpose, and the header note says so.
 - No `alert()`, `confirm()` or `!important`. Delete confirmation is an inline "Delete? Yes / No" inside the card.
 - Branding is a neutral "IT PMO" text wordmark in corporate blue. Do not add a real bank's logo, trademarks or look of an official system.
-- The only network call is FormSubmit (see below). Never send data anywhere else.
+- The only network call is FormSubmit (see below). Never send data anywhere else. The one exception is the IT support widget's `wa.me` links: plain user-clicked links that open WhatsApp in a new tab (`rel="noopener noreferrer"`), never `fetch`.
 
 ## Running and checking
 
@@ -26,7 +26,7 @@ All behaviour follows one rule: **mutate `state`, then call `renderBoard()`**.
 
 - `state = { tasks, filters, pendingDeleteId, nextId }` is the single source of truth. Card UI state (which card is showing the delete confirm) lives in `state.pendingDeleteId`, not in the DOM.
 - `renderBoard()` rebuilds every column from `applyFilters(state.tasks)` via `renderCard()`. Nothing outside `renderBoard()` edits card contents directly. A refresh never calls it, so drag, focus and the delete confirm are not disturbed.
-- `addTask()`, `moveTask()` and `deleteTask()` are the only task mutators; each calls `renderBoard()` then `refreshNow()`. Task IDs come from `nextTaskId()` as `UOB-ITPM-####`; seed tasks consume IDs 0001–0008.
+- `addTask()`, `moveTask()` and `deleteTask()` are the only task mutators; each calls `renderBoard()` then `refreshNow()`. Task IDs come from `nextTaskId()` as `DEMO-ITPM-####`; seed tasks consume IDs 0001–0008.
 - Event handling is delegated: `bindDragAndDrop(board)` and `bindCardControls(board)` attach once to `#board`, so re-rendering never needs rebinding. Card buttons/selects are identified by `data-action` and `data-id`. After a re-render, `focusCardControl()` restores keyboard focus.
 - Drag and drop uses the native HTML5 API; the drop target column reads `data-status`. The "Move ▸" select is the keyboard fallback and calls the same `moveTask()`.
 - All user strings pass through `escapeHtml()` before going into template literals. Keep that for any new field.
@@ -36,22 +36,38 @@ All behaviour follows one rule: **mutate `state`, then call `renderBoard()`**.
 ## Views, KPIs and live refresh
 
 - `VIEWS` drives the sidebar (bottom bar under 900px) and hash routing (`#combined`, `#board`, `#kpis`, `#privacy`). Sections carry `data-views="..."`; `setView()` toggles `hidden`. Combined = headline + KPI cards + board.
-- KPI cards are built once by `buildKpiGrid()` from `KPI_DEFS` and updated in place by `updateKpis()` (so focus survives). KPI "Show these tasks" sets `state.filters.quick` (`QUICK_FILTERS`) and drills into the board. Header counts are computed over all tasks, not the filtered set.
+- KPI cards are built once by `buildKpiGrid()` from `KPI_GROUPS` (three plain-language questions) and `KPI_DEFS`, and updated in place by `updateKpis()` (so focus survives). Each def supplies a bar fraction, a context sentence and a `rule` explaining when the status changes. KPI "Show these tasks" sets `state.filters.quick` (`QUICK_FILTERS`) and drills into the board. Header counts are computed over all tasks, not the filtered set.
 - Analytics data comes from `api.*` in the script: simulated async functions (local, with latency), because the only allowed network call is FormSubmit. `refresh()` runs them with `Promise.all`, never overlaps requests (`live.inflight`/`live.rerun`), reschedules itself every `REFRESH_MS` (5s), and pauses when the tab is hidden or the user clicks Pause.
 - Keep the async rules in `.claude/skills/frontend-async-best-practices`: parallelise independent work, chain only dependent work.
 
 ## Sensitive data in analytics
 
 - Analytics use counts only. Never put titles, descriptions or emails into KPIs, tables or the activity log (IDs and stages only).
-- Staff names are masked to initials (`maskName()`, `state.maskNames`) unless the user clicks "Show full names"; this is never persisted.
+- Staff names are masked to initials (`maskName()`, `state.maskNames`) unless the user clicks "Show full names"; this is never persisted. Revealed names re-mask after 60 seconds or when the user leaves the KPIs view (`hideNames()`).
+- Sensitive data uses one badge vocabulary, `SENSITIVITY` + `sensHtml()` (Counts only, Personal data, Confidential, Leaves the bank). Mark elements with `data-sens`; `init()` renders them.
 - `findSensitive()` blocks card/account numbers, national IDs, emails and password-like text in the Add Task title and description. The modal warns that FormSubmit is an external service.
 - `DATA_CLASSES` feeds the Data privacy view. Add a row there when a new kind of data is shown.
+
+## IT support widget
+
+- A floating button (bottom right) opens a panel of suggested IT support queries. Each is a `https://wa.me/<number>?text=...` link that opens WhatsApp with "Hi IT Support, <query>" pre-filled; nothing is sent until the user sends it in WhatsApp.
+- `SUPPORT_WHATSAPP` (digits only, with country code) and `SUPPORT_QUERIES` sit at the top of the script. `bindSupportWidget()` builds the list with `escapeHtml()`. Esc, an outside click or choosing a topic closes the panel.
+- The number is public in the source and on the live site. The privacy view lists these messages in `DATA_CLASSES` as leaving the bank; keep that row if you change the widget.
+- Toasts and the mobile bottom nav are positioned to clear the widget; check both if you move it.
+
+## Security briefing hook
+
+- `.claude/hooks/security-briefing.js` is a self-contained browser script, loaded by the last `<script src>` in `index.html`. After 10 seconds of visible time it shows a native `<dialog>` once: a company security briefing next Monday at 10:00 am in the Town Hall room. Edit `CONFIG` at the top of the file to change the delay, wording, weekday, time or place.
+- It is the one exception to the single-file rule. The Pages workflow copies it to `_site/.claude/hooks/`; keep that line in `.github/workflows/pages.yml` or the popup silently disappears from the live site.
+- It follows the same rules as the app: no `alert()`, no storage, no network. It waits if the Add Task modal is open.
+- The popup is browser code, not a Claude Code hook. `.claude/hooks/check-security-briefing.sh` is a real Claude Code PostToolUse hook (registered in `.claude/settings.json`): after edits to `index.html` or the script it checks that the script tag, 10-second delay, time, place and the Pages copy step are still in place, and rejects `alert()`/`confirm()`.
 
 ## Add Task and FormSubmit
 
 - `handleSubmit()` validates with `validateTask()` (inline errors via `showErrors()`), then adds the card optimistically, and only then calls `notifyNewTask()`. The submit button shows "Sending…" while in flight and the modal closes when the request settles.
 - `FORMSUBMIT_ENDPOINT` at the top of the script is the one place to set the recipient email. FormSubmit needs a one-time activation: the first submission emails a confirmation link to that address, and nothing is delivered until it is clicked.
 - `notifyNewTask()` throws on a non-OK response or on `success: "false"`. Callers catch it and show "Card added locally — email notification failed"; a FormSubmit failure must never break the board.
+
 
 ## Related copy
 
