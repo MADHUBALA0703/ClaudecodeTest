@@ -26,7 +26,7 @@ All behaviour follows one rule: **mutate `state`, then call `renderBoard()`**.
 
 - `state = { tasks, filters, pendingDeleteId, nextId }` is the single source of truth. Card UI state (which card is showing the delete confirm) lives in `state.pendingDeleteId`, not in the DOM.
 - `renderBoard()` rebuilds every column from `applyFilters(state.tasks)` via `renderCard()`. Nothing outside `renderBoard()` edits card contents directly. A refresh never calls it, so drag, focus and the delete confirm are not disturbed.
-- `addTask()`, `moveTask()` and `deleteTask()` are the only task mutators; each calls `renderBoard()` then `refreshNow()`. Task IDs come from `nextTaskId()` as `UOB-ITPM-####`; seed tasks consume IDs 0001–0008.
+- `addTask()`, `moveTask()` and `deleteTask()` are the only task mutators; each calls `renderBoard()` then `refreshNow()`. Task IDs come from `nextTaskId()` as `DEMO-ITPM-####`; seed tasks consume IDs 0001–0008.
 - Event handling is delegated: `bindDragAndDrop(board)` and `bindCardControls(board)` attach once to `#board`, so re-rendering never needs rebinding. Card buttons/selects are identified by `data-action` and `data-id`. After a re-render, `focusCardControl()` restores keyboard focus.
 - Drag and drop uses the native HTML5 API; the drop target column reads `data-status`. The "Move ▸" select is the keyboard fallback and calls the same `moveTask()`.
 - All user strings pass through `escapeHtml()` before going into template literals. Keep that for any new field.

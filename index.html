@@ -903,7 +903,7 @@ const state = {
 };
 
 function nextTaskId() {
-  const id = "UOB-ITPM-" + String(state.nextId).padStart(4, "0");
+  const id = "DEMO-ITPM-" + String(state.nextId).padStart(4, "0");
   state.nextId += 1;
   return id;
 }
@@ -1541,7 +1541,7 @@ async function notifyNewTask(task) {
     method: "POST",
     headers: { "Content-Type": "application/json", Accept: "application/json" },
     body: JSON.stringify({
-      _subject: `[UOB IT PMO] New task ${task.id}: ${task.title}`,
+      _subject: `[IT PMO Demo] New task ${task.id}: ${task.title}`,
       _template: "table",
       _captcha: "false",
       "Task ID": task.id,
