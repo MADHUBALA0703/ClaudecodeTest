@@ -36,14 +36,15 @@ All behaviour follows one rule: **mutate `state`, then call `renderBoard()`**.
 ## Views, KPIs and live refresh
 
 - `VIEWS` drives the sidebar (bottom bar under 900px) and hash routing (`#combined`, `#board`, `#kpis`, `#privacy`). Sections carry `data-views="..."`; `setView()` toggles `hidden`. Combined = headline + KPI cards + board.
-- KPI cards are built once by `buildKpiGrid()` from `KPI_DEFS` and updated in place by `updateKpis()` (so focus survives). KPI "Show these tasks" sets `state.filters.quick` (`QUICK_FILTERS`) and drills into the board. Header counts are computed over all tasks, not the filtered set.
+- KPI cards are built once by `buildKpiGrid()` from `KPI_GROUPS` (three plain-language questions) and `KPI_DEFS`, and updated in place by `updateKpis()` (so focus survives). Each def supplies a bar fraction, a context sentence and a `rule` explaining when the status changes. KPI "Show these tasks" sets `state.filters.quick` (`QUICK_FILTERS`) and drills into the board. Header counts are computed over all tasks, not the filtered set.
 - Analytics data comes from `api.*` in the script: simulated async functions (local, with latency), because the only allowed network call is FormSubmit. `refresh()` runs them with `Promise.all`, never overlaps requests (`live.inflight`/`live.rerun`), reschedules itself every `REFRESH_MS` (5s), and pauses when the tab is hidden or the user clicks Pause.
 - Keep the async rules in `.claude/skills/frontend-async-best-practices`: parallelise independent work, chain only dependent work.
 
 ## Sensitive data in analytics
 
 - Analytics use counts only. Never put titles, descriptions or emails into KPIs, tables or the activity log (IDs and stages only).
-- Staff names are masked to initials (`maskName()`, `state.maskNames`) unless the user clicks "Show full names"; this is never persisted.
+- Staff names are masked to initials (`maskName()`, `state.maskNames`) unless the user clicks "Show full names"; this is never persisted. Revealed names re-mask after 60 seconds or when the user leaves the KPIs view (`hideNames()`).
+- Sensitive data uses one badge vocabulary, `SENSITIVITY` + `sensHtml()` (Counts only, Personal data, Confidential, Leaves the bank). Mark elements with `data-sens`; `init()` renders them.
 - `findSensitive()` blocks card/account numbers, national IDs, emails and password-like text in the Add Task title and description. The modal warns that FormSubmit is an external service.
 - `DATA_CLASSES` feeds the Data privacy view. Add a row there when a new kind of data is shown.
 
