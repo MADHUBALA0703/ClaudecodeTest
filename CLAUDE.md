@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-A demo IT PMO control room (combined KPI + Kanban view) for a fictitious bank, used as a training tool. The whole app is one file, `index.html`, with inline `<style>` and `<script>`. There is no build, package manager, linter or test suite.
+A demo IT PMO control room (combined KPI + Kanban view) for a fictitious bank, used as a training tool. The app is `index.html`, with inline `<style>` and `<script>`, plus one small script, `.claude/hooks/security-briefing.js`, loaded at the end of the body. There is no build, package manager, linter or test suite.
 
 ## Hard constraints (from the original spec; keep them)
 
@@ -52,6 +52,10 @@ All behaviour follows one rule: **mutate `state`, then call `renderBoard()`**.
 - `handleSubmit()` validates with `validateTask()` (inline errors via `showErrors()`), then adds the card optimistically, and only then calls `notifyNewTask()`. The submit button shows "Sending…" while in flight and the modal closes when the request settles.
 - `FORMSUBMIT_ENDPOINT` at the top of the script is the one place to set the recipient email. FormSubmit needs a one-time activation: the first submission emails a confirmation link to that address, and nothing is delivered until it is clicked.
 - `notifyNewTask()` throws on a non-OK response or on `success: "false"`. Callers catch it and show "Card added locally — email notification failed"; a FormSubmit failure must never break the board.
+
+## Security briefing hook
+
+`.claude/hooks/security-briefing.js` opens a native `<dialog>` after 10 seconds on the page (hidden-tab time does not count; once per page load; no storage or network). Edit the `BRIEFING` object at its top to change the date, time or place. The Pages workflow copies this file next to `index.html`; keep that `cp` line if the path changes.
 
 ## Related copy
 
