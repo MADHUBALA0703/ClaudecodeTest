@@ -4,6 +4,8 @@ A demo Kanban board for the IT Project Management Office of a **fictitious bank*
 
 **Live demo:** https://madhubala0703.github.io/ClaudecodeTest/
 
+![IT PMO Kanban board screenshot](docs/screenshot.png)
+
 ## Features
 
 - Four columns: **Backlog**, **In Progress**, **Blocked** and **Done**.

@@ -74,6 +74,15 @@ Read the existing `README.md`, `CLAUDE.md` and the main source files to understa
 
 Do not put secrets, real personal emails or internal URLs in the README.
 
+## 2a. Screenshot for the README
+
+Capture a fresh screenshot of the running site and embed it in the README, so the image always matches what is being published.
+
+1. Load the app with the **Playwright MCP tools** (project `.mcp.json` registers the `playwright` server): `browser_navigate` to `file://<repo>/index.html` (or the live Pages URL on later runs), `browser_resize` to 1440x900, then `browser_take_screenshot` saving to `docs/screenshot.png`. If the Playwright MCP tools are not available in this session, fall back to a headless Playwright script (`NODE_PATH=$(npm root -g) node script.js`, `page.route('https://formsubmit.co/**', r => r.abort())` so no real email is sent).
+2. View the image and check it shows the board correctly (no error toasts, no open modal, no real email addresses visible).
+3. Make sure the README has `![<project> screenshot](docs/screenshot.png)` near the top (just before the Features section). Replace the existing image line rather than adding a second one.
+4. `docs/screenshot.png` is committed in step 4. It is not copied into `_site`, because the README is rendered by GitHub, not by Pages.
+
 ## 3. GitHub Pages workflow (create or update)
 
 Create or update `.github/workflows/pages.yml`. If one already exists, update it in place and keep any custom steps the user added. Use the official Pages actions and **publish only the site files**, not repo internals like `CLAUDE.md`, `.claude/` or `.github/`:
@@ -121,7 +130,7 @@ Replace `BRANCH` with the target branch. If the project has more static assets t
 ## 4. Commit and push
 
 1. Show the user `git status` and a short summary of the diff you are about to commit.
-2. Commit the README, workflow and `.gitignore` changes with a clear message (e.g. `Add README, GitHub Pages workflow and .gitignore`).
+2. Commit the README, `docs/screenshot.png`, workflow and `.gitignore` changes with a clear message (e.g. `Add README, GitHub Pages workflow and .gitignore`).
 3. If the repo does not exist, create it: `gh repo create OWNER/REPO --public|--private --source . --remote origin` (don't use `--push` yet). Confirm with the user before creating a **public** repository.
 4. Set the remote: if `origin` is missing add it; if it points elsewhere, ask before changing it (or add a new remote named `github`).
 5. Push: `git push -u origin HEAD:BRANCH`. On a network error retry up to 4 times with backoff (2s, 4s, 8s, 16s).
