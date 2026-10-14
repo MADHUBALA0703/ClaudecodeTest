@@ -392,11 +392,43 @@ main { padding: var(--space-5); min-width: 0; }
 /* =========================================================
    Toasts
    ========================================================= */
-.toasts { position: fixed; bottom: var(--space-4); right: var(--space-4); display: flex; flex-direction: column; gap: var(--space-2); z-index: 40; max-width: calc(100vw - 2 * var(--space-4)); }
+.toasts { position: fixed; bottom: 96px; right: var(--space-4); display: flex; flex-direction: column; gap: var(--space-2); z-index: 40; max-width: calc(100vw - 2 * var(--space-4)); }
 .toast { border-radius: var(--radius-sm); padding: var(--space-3) var(--space-4); box-shadow: var(--shadow); font-weight: 600; border-left: 4px solid currentColor; }
 .toast-success { background: var(--c-success-bg); color: var(--c-success); }
 .toast-warning { background: var(--c-warning-bg); color: var(--c-warning); }
 .toast-info { background: var(--c-brand-light); color: var(--c-brand-dark); }
+
+/* =========================================================
+   Floating IT support chat widget (opens WhatsApp)
+   ========================================================= */
+.support { position: fixed; right: var(--space-5); bottom: var(--space-5); z-index: 25; display: flex; flex-direction: column; align-items: flex-end; gap: var(--space-3); }
+.support-toggle {
+  width: 60px; height: 60px; border-radius: 50%; border: 0; padding: 0;
+  background: #0e7a5f; color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+}
+.support-toggle:hover { background: #0a6149; }
+.support-toggle .icon { width: 32px; height: 32px; }
+.support-panel {
+  width: min(340px, calc(100vw - 2 * var(--space-4)));
+  background: var(--c-surface); border-radius: var(--radius);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3); overflow: hidden;
+}
+.support-panel[hidden] { display: none; }
+.support-head { background: #0e7a5f; color: #fff; padding: var(--space-3) var(--space-4); }
+.support-head h2 { margin: 0; font-size: 16px; }
+.support-head p { margin: 2px 0 0; font-size: 13px; }
+.support-body { padding: var(--space-4); background: #eef3f1; }
+.support-hello { margin: 0 0 var(--space-3); padding: var(--space-3); background: var(--c-surface); border-radius: 0 var(--radius) var(--radius) var(--radius); box-shadow: var(--shadow); font-size: 14px; }
+.support-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-2); max-height: calc(100vh - 330px); min-height: 160px; overflow-y: auto; }
+.support-link {
+  display: flex; align-items: center; min-height: 44px; padding: var(--space-1) var(--space-3);
+  background: var(--c-surface); color: #0a5c47; font-weight: 600; font-size: 14px; text-decoration: none;
+  border: 1px solid #b9d4cb; border-radius: 999px;
+}
+.support-link:hover { background: #e1f1ea; }
+.support-foot { margin: 0; padding: var(--space-3) var(--space-4); font-size: 12px; color: var(--c-muted); border-top: 1px solid var(--c-border); }
 
 /* =========================================================
    Motion: only when the user has not asked to reduce it
@@ -422,7 +454,8 @@ main { padding: var(--space-5); min-width: 0; }
   .nav-link { flex-direction: column; justify-content: center; gap: 2px; min-height: 52px; padding: 0 var(--space-2); font-size: 12px; text-align: center; }
   .sidebar-foot { display: none; }
   main { padding: var(--space-4) var(--space-4) 88px; }
-  .toasts { bottom: 80px; }
+  .toasts { bottom: 156px; }
+  .support { right: var(--space-4); bottom: 84px; }
   .form-grid { grid-template-columns: 1fr; }
   .filters .field, .filters input, .filters select { width: 100%; }
 }
@@ -639,6 +672,24 @@ main { padding: var(--space-5); min-width: 0; }
   </section>
 </div>
 
+<!-- =========================================================
+     Floating IT support widget: suggested queries open WhatsApp
+     ========================================================= -->
+<div class="support" id="support">
+  <section class="support-panel" id="support-panel" aria-labelledby="support-title" hidden>
+    <div class="support-head">
+      <h2 id="support-title">IT Support</h2>
+      <p>Chat with us on WhatsApp</p>
+    </div>
+    <div class="support-body">
+      <p class="support-hello">Hi! What do you need help with? Pick a topic and WhatsApp opens with your message ready to send.</p>
+      <ul class="support-list" id="support-list"></ul>
+    </div>
+    <p class="support-foot">Opens WhatsApp outside this app. Never send passwords, card numbers or customer details.</p>
+  </section>
+  <button type="button" class="support-toggle" id="support-toggle" aria-expanded="false" aria-controls="support-panel" aria-label="Open IT support chat"></button>
+</div>
+
 <!-- Toast region, announced politely to screen readers -->
 <div class="toasts" id="toasts" aria-live="polite" aria-atomic="false"></div>
 
@@ -654,6 +705,19 @@ main { padding: var(--space-5); min-width: 0; }
    ========================================================= */
 const FORMSUBMIT_ENDPOINT = "https://formsubmit.co/ajax/YOUR_EMAIL@example.com";
 const REFRESH_MS = 5000;
+
+// IT support chat widget: WhatsApp number (digits only, with country code) and suggested queries
+const SUPPORT_WHATSAPP = "6512345678";
+const SUPPORT_QUERIES = [
+  "I forgot my password and need it reset",
+  "I can't connect to the VPN",
+  "My laptop is running slowly",
+  "I need access to a system or application",
+  "I received a suspicious email",
+  "My printer or meeting room equipment isn't working",
+  "I need new software or hardware",
+  "I want an update on my IT ticket",
+];
 
 /* =========================================================
    Reference data
@@ -698,6 +762,7 @@ const DATA_CLASSES = [
   { what: "Staff names", where: "Board cards, open work by person", level: "personal", levelLabel: "Personal data", how: "Shortened to initials in analytics unless deliberately shown." },
   { what: "Task titles and descriptions", where: "Board cards, new-task email", level: "conf", levelLabel: "Confidential", how: "Never used in analytics. Scanned for card numbers, IDs, emails and passwords before a task is added." },
   { what: "New-task email", where: "Sent to FormSubmit (outside the bank)", level: "ext", levelLabel: "Leaves the bank", how: "Warning shown on the form. Use an approved internal channel for real work." },
+  { what: "IT support chat messages", where: "Opened in WhatsApp (outside the bank)", level: "ext", levelLabel: "Leaves the bank", how: "Only the topic you pick is pre-filled, and nothing is sent until you press send in WhatsApp. Do not share passwords, card numbers or customer details." },
   { what: "Browser storage", where: "Nowhere", level: "low", levelLabel: "None kept", how: "Nothing is saved. A refresh clears the board." },
 ];
 
@@ -717,6 +782,8 @@ const ICONS = {
   plus: '<path d="M12 5v14M5 12h14"/>',
   eye: '<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/>',
   eyeoff: '<path d="M3 3l18 18M10.6 5.1A9.7 9.7 0 0112 5c6 0 10 7 10 7a17 17 0 01-3.2 3.9M6.6 6.6A17 17 0 002 12s4 7 10 7a9.6 9.6 0 004.4-1.1"/>',
+  chat: '<path d="M21 11.5a8.4 8.4 0 01-12.4 7.4L3 20.5l1.7-5.3A8.4 8.4 0 1121 11.5z"/><path d="M9 8.5c0 3.5 3 6.5 6.5 6.5l1.2-1.6-2.3-1.1-.9.9a4.600 4.600 0 01-2-2l.9-.9L11.300 7.700z"/>',
+  close: '<path d="M6 6l12 12M18 6L6 18"/>',
   user: '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/>',
 };
 function icon(name) {
@@ -1553,6 +1620,41 @@ function bindFilters() {
 }
 
 /* =========================================================
+   Floating IT support widget (the links open WhatsApp in a new tab)
+   ========================================================= */
+function whatsappLink(message) {
+  const base = "https://wa.me/" + SUPPORT_WHATSAPP.replace(/\D/g, "");
+  return message ? `${base}?text=${encodeURIComponent("Hi IT Support, " + message)}` : base;
+}
+
+function bindSupportWidget() {
+  const toggle = document.getElementById("support-toggle");
+  const panel = document.getElementById("support-panel");
+  const root = document.getElementById("support");
+
+  document.getElementById("support-list").innerHTML = SUPPORT_QUERIES.map((q) =>
+    `<li><a class="support-link" href="${escapeHtml(whatsappLink(q))}" target="_blank" rel="noopener noreferrer">${escapeHtml(q)}</a></li>`).join("") +
+    `<li><a class="support-link" href="${escapeHtml(whatsappLink(""))}" target="_blank" rel="noopener noreferrer">Something else: start a chat</a></li>`;
+
+  const paint = (open) => {
+    panel.hidden = !open;
+    toggle.setAttribute("aria-expanded", String(open));
+    toggle.setAttribute("aria-label", open ? "Close IT support chat" : "Open IT support chat");
+    toggle.innerHTML = icon(open ? "close" : "chat");
+  };
+  const setOpen = (open, returnFocus) => {
+    paint(open);
+    if (!open && returnFocus) toggle.focus();
+  };
+  paint(false);
+
+  toggle.addEventListener("click", () => setOpen(panel.hidden));
+  panel.addEventListener("click", (e) => { if (e.target.closest(".support-link")) setOpen(false); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !panel.hidden) setOpen(false, true); });
+  document.addEventListener("pointerdown", (e) => { if (!panel.hidden && !root.contains(e.target)) setOpen(false); });
+}
+
+/* =========================================================
    Init
    ========================================================= */
 function init() {
@@ -1577,6 +1679,7 @@ function init() {
   bindCardControls(board);
   bindFilters();
   bindLive();
+  bindSupportWidget();
 
   document.getElementById("kpi-grid").addEventListener("click", (e) => {
     const btn = e.target.closest("button[data-quick]");

@@ -19,6 +19,7 @@ A demo control room for the IT Project Management Office of a **fictitious bank*
 - Deleting a card asks for inline confirmation (**Delete? Yes / No**).
 - Optional email notice for each new task, sent through [FormSubmit](https://formsubmit.co).
 - **Security briefing reminder:** after 10 seconds on the page, a dialog announces the company security briefing next Monday at 10:00 am in the Town Hall room. It shows once per visit. The script is `.claude/hooks/security-briefing.js`, and the details are editable at the top of that file.
+- **IT support chat widget:** a floating button at the bottom right opens a list of suggested IT support questions. Choosing one opens WhatsApp (number set in `SUPPORT_WHATSAPP`) with the message ready to send.
 - Responsive layout and keyboard accessible.
 
 ## Run it locally
@@ -46,7 +47,7 @@ FormSubmit needs a one-time activation. The first submission sends a confirmatio
 ## Notes
 
 - **Nothing is saved, on purpose.** Tasks live only in memory, and refreshing the page resets the board to the sample data.
-- The only network request is the optional FormSubmit call. The 5-second refresh reads from the page's own in-memory data and makes no request.
+- The only network request is the optional FormSubmit call. The IT support widget only contains links that open WhatsApp in a new tab when clicked. The 5-second refresh reads from the page's own in-memory data and makes no request.
 - New-task emails go to an external service. Do not enter real customer or confidential information.
 
 ## Deployment

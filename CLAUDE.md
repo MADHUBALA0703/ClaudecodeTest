@@ -13,7 +13,7 @@ A demo IT PMO control room (combined KPI + Kanban view) for a fictitious bank, u
 - No persistence of any kind: no localStorage, sessionStorage, IndexedDB or cookies. A refresh resets the board to the seed data on purpose, and the header note says so.
 - No `alert()`, `confirm()` or `!important`. Delete confirmation is an inline "Delete? Yes / No" inside the card.
 - Branding is a neutral "IT PMO" text wordmark in corporate blue. Do not add a real bank's logo, trademarks or look of an official system.
-- The only network call is FormSubmit (see below). Never send data anywhere else.
+- The only network call is FormSubmit (see below). Never send data anywhere else. The one exception is the IT support widget's `wa.me` links: plain user-clicked links that open WhatsApp in a new tab (`rel="noopener noreferrer"`), never `fetch`.
 
 ## Running and checking
 
@@ -46,6 +46,13 @@ All behaviour follows one rule: **mutate `state`, then call `renderBoard()`**.
 - Staff names are masked to initials (`maskName()`, `state.maskNames`) unless the user clicks "Show full names"; this is never persisted.
 - `findSensitive()` blocks card/account numbers, national IDs, emails and password-like text in the Add Task title and description. The modal warns that FormSubmit is an external service.
 - `DATA_CLASSES` feeds the Data privacy view. Add a row there when a new kind of data is shown.
+
+## IT support widget
+
+- A floating button (bottom right) opens a panel of suggested IT support queries. Each is a `https://wa.me/<number>?text=...` link that opens WhatsApp with "Hi IT Support, <query>" pre-filled; nothing is sent until the user sends it in WhatsApp.
+- `SUPPORT_WHATSAPP` (digits only, with country code) and `SUPPORT_QUERIES` sit at the top of the script. `bindSupportWidget()` builds the list with `escapeHtml()`. Esc, an outside click or choosing a topic closes the panel.
+- The number is public in the source and on the live site. The privacy view lists these messages in `DATA_CLASSES` as leaving the bank; keep that row if you change the widget.
+- Toasts and the mobile bottom nav are positioned to clear the widget; check both if you move it.
 
 ## Security briefing hook
 
