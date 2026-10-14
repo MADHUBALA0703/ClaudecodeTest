@@ -1,0 +1,20 @@
+# Secrets and credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa*
+
+# OS / editor junk
+.DS_Store
+Thumbs.db
+*.log
+
+# Local Claude Code settings
+.claude/settings.local.json
+
+# Pages build output
+_site/
