@@ -18,6 +18,7 @@ A demo control room for the IT Project Management Office of a **fictitious bank*
 - Overdue cards are highlighted. The sample due dates are relative to today, so some cards are always overdue.
 - Deleting a card asks for inline confirmation (**Delete? Yes / No**).
 - Optional email notice for each new task, sent through [FormSubmit](https://formsubmit.co).
+- A security briefing notice (next Monday 10:00 am, Town Hall room) pops up in a dialog after 10 seconds on the page. Change the wording in `BRIEFING` near the top of the script.
 - Responsive layout and keyboard accessible.
 
 ## Run it locally

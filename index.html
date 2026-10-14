@@ -454,6 +454,17 @@ main { padding: var(--space-5); min-width: 0; }
 .form-actions { display: flex; justify-content: flex-end; gap: var(--space-2); margin-top: var(--space-5); }
 
 /* =========================================================
+   Security briefing notice (shown once, 10 seconds after load)
+   ========================================================= */
+.briefing { max-width: 460px; border-top: 6px solid var(--c-private); }
+.briefing .modal-head h2 { display: flex; align-items: center; gap: var(--space-2); }
+.briefing .modal-head .icon { width: 22px; height: 22px; color: var(--c-private); }
+.briefing p { margin: 0 0 var(--space-3); }
+.briefing-facts { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: var(--space-1) var(--space-4); padding: var(--space-3); background: var(--c-private-bg); border-radius: var(--radius-sm); }
+.briefing-facts dt { font-weight: 700; color: var(--c-private); }
+.briefing-facts dd { margin: 0; font-weight: 600; }
+
+/* =========================================================
    Toasts
    ========================================================= */
 .toasts { position: fixed; bottom: var(--space-4); right: var(--space-4); display: flex; flex-direction: column; gap: var(--space-2); z-index: 40; max-width: calc(100vw - 2 * var(--space-4)); }
@@ -762,6 +773,24 @@ main { padding: var(--space-5); min-width: 0; }
   </section>
 </div>
 
+<!-- Security briefing notice: opened by script after BRIEFING.delayMs -->
+<div class="modal-backdrop" id="briefing" hidden>
+  <section class="modal briefing" role="dialog" aria-modal="true" aria-labelledby="briefing-title" aria-describedby="briefing-text">
+    <div class="modal-head">
+      <h2 id="briefing-title"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true" id="briefing-icon"></svg>Security briefing next Monday</h2>
+      <button type="button" class="icon-btn" id="briefing-close" aria-label="Close security briefing notice">&times;</button>
+    </div>
+    <p id="briefing-text">There is a company security briefing next Monday. Please plan to attend.</p>
+    <dl class="briefing-facts">
+      <dt>When</dt><dd id="briefing-when"></dd>
+      <dt>Where</dt><dd id="briefing-where"></dd>
+    </dl>
+    <div class="form-actions">
+      <button type="button" class="btn btn-primary" id="briefing-ok">Got it</button>
+    </div>
+  </section>
+</div>
+
 <!-- Toast region, announced politely to screen readers -->
 <div class="toasts" id="toasts" aria-live="polite" aria-atomic="false"></div>
 <!--
@@ -776,6 +805,8 @@ main { padding: var(--space-5); min-width: 0; }
    ========================================================= */
 const FORMSUBMIT_ENDPOINT = "https://formsubmit.co/ajax/YOUR_EMAIL@example.com";
 const REFRESH_MS = 5000;
+// Security briefing notice: shown once per page load after delayMs on the page
+const BRIEFING = { delayMs: 10000, time: "10:00 am", place: "Town Hall room" };
 
 /* =========================================================
    Reference data
@@ -1779,6 +1810,55 @@ function bindFilters() {
 }
 
 /* =========================================================
+   Security briefing notice
+   Waits until the tab is visible and the Add Task form is closed, so it
+   never covers something the user is typing. Shown once per page load.
+   ========================================================= */
+const briefing = { el: null, lastFocus: null };
+
+function nextMonday() {
+  const d = new Date();
+  d.setDate(d.getDate() + (((8 - d.getDay()) % 7) || 7)); // never today, even on a Monday
+  return d;
+}
+
+function openBriefing() {
+  const date = nextMonday().toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "short", year: "numeric" });
+  document.getElementById("briefing-when").textContent = `${date}, ${BRIEFING.time}`;
+  document.getElementById("briefing-where").textContent = BRIEFING.place;
+  briefing.lastFocus = document.activeElement;
+  briefing.el.hidden = false;
+  document.getElementById("briefing-ok").focus();
+}
+
+function closeBriefing() {
+  briefing.el.hidden = true;
+  if (briefing.lastFocus && document.contains(briefing.lastFocus)) briefing.lastFocus.focus();
+}
+
+function tryShowBriefing() {
+  if (document.hidden || !modal.hidden) { setTimeout(tryShowBriefing, 1000); return; }
+  openBriefing();
+}
+
+function bindBriefing() {
+  briefing.el = document.getElementById("briefing");
+  setIcon("briefing-icon", "shield");
+  document.getElementById("briefing-ok").addEventListener("click", closeBriefing);
+  document.getElementById("briefing-close").addEventListener("click", closeBriefing);
+  briefing.el.addEventListener("click", (e) => { if (e.target === briefing.el) closeBriefing(); });
+  // Keep Tab inside the dialog: it holds two controls, so wrap between them
+  briefing.el.addEventListener("keydown", (e) => {
+    if (e.key !== "Tab") return;
+    const first = document.getElementById("briefing-close");
+    const last = document.getElementById("briefing-ok");
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  });
+  setTimeout(tryShowBriefing, BRIEFING.delayMs);
+}
+
+/* =========================================================
    Init
    ========================================================= */
 function init() {
@@ -1826,7 +1906,12 @@ function init() {
   document.getElementById("close-add").addEventListener("click", closeModal);
   document.getElementById("cancel-add").addEventListener("click", closeModal);
   modal.addEventListener("click", (e) => { if (e.target === modal) closeModal(); });
-  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !modal.hidden) closeModal(); });
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape") return;
+    if (!briefing.el.hidden) closeBriefing();
+    else if (!modal.hidden) closeModal();
+  });
+  bindBriefing();
 
   seedTasks();
   renderBoard();

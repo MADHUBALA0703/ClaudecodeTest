@@ -54,6 +54,11 @@ All behaviour follows one rule: **mutate `state`, then call `renderBoard()`**.
 - `FORMSUBMIT_ENDPOINT` at the top of the script is the one place to set the recipient email. FormSubmit needs a one-time activation: the first submission emails a confirmation link to that address, and nothing is delivered until it is clicked.
 - `notifyNewTask()` throws on a non-OK response or on `success: "false"`. Callers catch it and show "Card added locally — email notification failed"; a FormSubmit failure must never break the board.
 
+## Security briefing notice
+
+- After `BRIEFING.delayMs` (10s) on the page, `tryShowBriefing()` opens the `#briefing` in-page dialog once per page load (no persistence, so a refresh shows it again). It waits while the tab is hidden or the Add Task form is open. The date is always the next Monday after today; time and place come from `BRIEFING`.
+- It runs inside `index.html` because the site is one file with no external scripts. `.claude/hooks/check-security-briefing.sh` is a Claude Code PostToolUse hook (registered in `.claude/settings.json`) that checks the notice is still wired up after edits to `index.html`; it does not run in the browser.
+
 ## Related copy
 
 A theme-aware copy was published as a private claude.ai artifact (it adds dark-mode tokens and safe-area gutters and drops the document skeleton). It is a separate file; changes to `index.html` do not reach it automatically.
