@@ -3,21 +3,26 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>IT PMO Kanban</title>
+<title>IT PMO Control Room</title>
 <style>
 /* =========================================================
-   Design tokens: palette and spacing scale
+   Design tokens
+   Direction: a calm control room in corporate blue. Plain words first,
+   numbers second, colour is never the only signal (icon + text always).
    ========================================================= */
 :root {
   --c-brand: #0b3d91;
   --c-brand-dark: #072a66;
   --c-brand-light: #e8eefa;
-  --c-bg: #f3f5f9;
+  --c-nav: #0a2552;
+  --c-nav-text: #dbe6fb;
+  --c-bg: #f2f5fa;
   --c-surface: #ffffff;
   --c-border: #d5dbe6;
   --c-text: #1b2333;
-  --c-muted: #5b6577;
-  --c-focus: #ffbf47;
+  --c-muted: #55607a;
+  --c-focus: #0b57d0;
+  --c-focus-on-dark: #ffbf47;
 
   --c-critical: #c62828;
   --c-high: #d98200;
@@ -30,6 +35,13 @@
   --c-success-bg: #e6f4ea;
   --c-warning: #8a5300;
   --c-warning-bg: #fff4e0;
+  --c-private: #6a2c91;
+  --c-private-bg: #f3e9fa;
+
+  --seg-backlog: #8a94a6;
+  --seg-progress: #1e63d6;
+  --seg-blocked: #d98200;
+  --seg-done: #1b7a3e;
 
   --space-1: 4px;
   --space-2: 8px;
@@ -42,6 +54,7 @@
   --radius-sm: 4px;
   --shadow: 0 1px 3px rgba(16, 30, 60, 0.12);
   --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-display: ui-serif, Georgia, Cambria, "Times New Roman", serif;
 }
 
 /* =========================================================
@@ -51,20 +64,24 @@
 body {
   margin: 0;
   font-family: var(--font);
-  font-size: 14px;
-  line-height: 1.4;
+  font-size: 15px;
+  line-height: 1.5;
   color: var(--c-text);
   background: var(--c-bg);
 }
 button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
 :focus-visible { outline: 3px solid var(--c-focus); outline-offset: 2px; }
+.sidebar :focus-visible, .app-header :focus-visible { outline-color: var(--c-focus-on-dark); }
 .visually-hidden {
   position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
   overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
 }
+[data-views][hidden] { display: none; }
+.icon { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
 /* =========================================================
-   Header and summary strip
+   Header
    ========================================================= */
 .app-header {
   background: var(--c-brand);
@@ -73,7 +90,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-4);
+  gap: var(--space-3) var(--space-4);
 }
 .wordmark {
   margin: 0;
@@ -83,39 +100,38 @@ button, input, select, textarea { font: inherit; color: inherit; }
   display: flex;
   align-items: center;
   gap: var(--space-2);
+  margin-right: auto;
 }
-.wordmark-box {
-  display: inline-block;
-  border: 2px solid #fff;
-  border-radius: var(--radius-sm);
-  padding: 0 var(--space-2);
-}
+.wordmark-box { display: inline-block; border: 2px solid #fff; border-radius: var(--radius-sm); padding: 0 var(--space-2); }
 .wordmark small { font-weight: 400; font-size: 13px; opacity: 0.85; letter-spacing: 0; }
-.summary {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  flex: 1;
-}
-.summary li {
+
+.live {
+  display: flex; align-items: center; gap: var(--space-2);
   background: rgba(255, 255, 255, 0.12);
   border-radius: 999px;
-  padding: var(--space-1) var(--space-3);
+  padding: var(--space-1) var(--space-1) var(--space-1) var(--space-3);
   font-size: 13px;
 }
-.summary strong { font-size: 14px; }
-.summary .is-overdue { background: rgba(255, 120, 120, 0.3); }
+.live-dot { width: 10px; height: 10px; border-radius: 50%; background: #7ddc9b; flex: none; }
+.live[data-state="loading"] .live-dot, .live[data-state="refreshing"] .live-dot { background: #ffd27a; }
+.live[data-state="paused"] .live-dot { background: #c3cbdb; }
+.live[data-state="error"] .live-dot { background: #ff9a92; }
+.live-btn {
+  border: 0; border-radius: 999px; background: rgba(255, 255, 255, 0.18); color: #fff;
+  padding: var(--space-1) var(--space-3); min-height: 32px;
+  display: inline-flex; align-items: center; gap: var(--space-1); font-size: 13px; font-weight: 600;
+}
+.live-btn:hover { background: rgba(255, 255, 255, 0.3); }
+
 .btn {
   border: 1px solid transparent;
   border-radius: var(--radius-sm);
   padding: var(--space-2) var(--space-4);
-  cursor: pointer;
+  min-height: 40px;
   background: var(--c-surface);
   color: var(--c-brand);
   font-weight: 600;
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2);
 }
 .btn:hover { background: var(--c-brand-light); }
 .btn-primary { background: var(--c-brand); color: #fff; }
@@ -126,20 +142,161 @@ button, input, select, textarea { font: inherit; color: inherit; }
   background: var(--c-brand-light);
   color: var(--c-brand-dark);
   padding: var(--space-2) var(--space-5);
-  font-size: 12px;
+  font-size: 13px;
   margin: 0;
 }
 
 /* =========================================================
+   Shell: sidebar navigation + main
+   ========================================================= */
+.shell { display: grid; grid-template-columns: 232px minmax(0, 1fr); align-items: start; }
+.sidebar {
+  position: sticky; top: 0;
+  background: var(--c-nav);
+  color: var(--c-nav-text);
+  min-height: 100vh;
+  padding: var(--space-4) var(--space-3);
+}
+.nav-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-1); }
+.nav-link {
+  display: flex; align-items: center; gap: var(--space-3);
+  min-height: 44px; padding: 0 var(--space-3);
+  border-radius: var(--radius-sm);
+  color: inherit; text-decoration: none; font-weight: 600;
+}
+.nav-link:hover { background: rgba(255, 255, 255, 0.1); }
+.nav-link[aria-current="page"] { background: #fff; color: var(--c-brand-dark); }
+.sidebar-foot { margin: var(--space-5) var(--space-3) 0; font-size: 12px; opacity: 0.8; }
+
+main { padding: var(--space-5); min-width: 0; }
+.page-head { margin-bottom: var(--space-4); }
+.page-head h2 { margin: 0; font-size: 22px; }
+.page-head h2:focus { outline: none; }
+.page-head p { margin: var(--space-1) 0 0; color: var(--c-muted); max-width: 68ch; }
+.section-title { font-size: 17px; margin: 0 0 var(--space-1); }
+.section-hint { margin: 0 0 var(--space-3); color: var(--c-muted); font-size: 13px; }
+.block { margin-bottom: var(--space-6); }
+
+/* =========================================================
+   Headline summary (plain language)
+   ========================================================= */
+.headline {
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-left: 8px solid var(--c-low);
+  border-radius: var(--radius);
+  padding: var(--space-4) var(--space-5);
+  margin-bottom: var(--space-4);
+}
+.headline[data-tone="good"] { border-left-color: var(--c-success); }
+.headline[data-tone="watch"] { border-left-color: var(--c-high); }
+.headline[data-tone="action"] { border-left-color: var(--c-danger); }
+.headline-sentence {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(24px, 3.4vw, 34px);
+  line-height: 1.2;
+  font-weight: 700;
+  max-width: 28ch;
+}
+.headline-detail { margin: var(--space-2) 0 var(--space-3); color: var(--c-muted); }
+.mix { display: flex; height: 14px; border-radius: 999px; overflow: hidden; background: var(--c-border); gap: 2px; }
+.seg-backlog { background: var(--seg-backlog); }
+.seg-progress { background: var(--seg-progress); }
+.seg-blocked { background: var(--seg-blocked); }
+.seg-done { background: var(--seg-done); }
+.mix-legend { list-style: none; margin: var(--space-2) 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-4); font-size: 13px; }
+.mix-legend li { display: inline-flex; align-items: center; gap: var(--space-2); }
+.swatch { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+
+/* =========================================================
+   Privacy banner and KPI cards
+   ========================================================= */
+.privacy-bar {
+  display: flex; align-items: flex-start; gap: var(--space-3);
+  background: var(--c-private-bg); color: #3f1a5a;
+  border: 1px solid #d9bdee; border-radius: var(--radius);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-4);
+  font-size: 14px;
+}
+.privacy-bar a { color: inherit; font-weight: 700; }
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: var(--space-4);
+  margin: 0 0 var(--space-6);
+  padding: 0;
+  list-style: none;
+}
+.kpi {
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius);
+  padding: var(--space-4);
+  display: flex; flex-direction: column; gap: var(--space-1);
+}
+.kpi-head { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-2); }
+.kpi h3 { margin: 0; font-size: 15px; }
+.kpi-value { margin: var(--space-2) 0 0; display: flex; align-items: baseline; gap: var(--space-2); }
+.kpi-value .num { font-size: 40px; line-height: 1; font-weight: 700; font-variant-numeric: tabular-nums; }
+.kpi-value .unit { color: var(--c-muted); font-size: 14px; }
+.kpi-explain { margin: 0; color: var(--c-muted); font-size: 13px; }
+.kpi-delta { margin: 0; font-size: 12px; color: var(--c-muted); min-height: 18px; }
+.link-btn {
+  margin-top: auto; align-self: flex-start;
+  border: 0; background: none; padding: var(--space-2) 0; min-height: 40px;
+  color: var(--c-brand); font-weight: 700; text-decoration: underline;
+}
+.link-btn:hover { color: var(--c-brand-dark); }
+.status {
+  display: inline-flex; align-items: center; gap: var(--space-1);
+  border-radius: 999px; padding: 2px var(--space-2);
+  font-size: 12px; font-weight: 700; white-space: nowrap;
+}
+.status[hidden] { display: none; }
+.status-good { background: var(--c-success-bg); color: var(--c-success); }
+.status-watch { background: var(--c-warning-bg); color: var(--c-warning); }
+.status-action { background: var(--c-danger-bg); color: var(--c-danger); }
+.status .icon { width: 14px; height: 14px; }
+
+/* =========================================================
+   Tables (project / person / classification)
+   ========================================================= */
+.table-wrap { overflow-x: auto; background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius); }
+.data-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.data-table caption { text-align: left; padding: var(--space-3) var(--space-4) 0; font-weight: 700; }
+.data-table th, .data-table td { text-align: left; padding: var(--space-2) var(--space-4); border-bottom: 1px solid var(--c-border); vertical-align: top; }
+.data-table thead th { font-size: 12px; color: var(--c-muted); }
+.data-table tbody tr:last-child th, .data-table tbody tr:last-child td { border-bottom: 0; }
+.data-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+.data-table tbody th { font-weight: 600; }
+.split { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: var(--space-4); margin-bottom: var(--space-6); }
+.personal-flag {
+  display: inline-flex; align-items: center; gap: var(--space-1);
+  background: var(--c-private-bg); color: var(--c-private);
+  border-radius: 999px; padding: 2px var(--space-2); font-size: 12px; font-weight: 700;
+}
+.panel-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-2); margin-bottom: var(--space-2); }
+.panel-head h3 { margin: 0; font-size: 16px; }
+.btn-small { min-height: 36px; padding: var(--space-1) var(--space-3); font-size: 13px; background: var(--c-surface); border-color: var(--c-border); color: var(--c-text); }
+.activity { list-style: none; margin: 0; padding: 0; background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius); }
+.activity li { padding: var(--space-2) var(--space-4); border-bottom: 1px solid var(--c-border); display: flex; gap: var(--space-3); }
+.activity li:last-child { border-bottom: 0; }
+.activity time { color: var(--c-muted); font-variant-numeric: tabular-nums; flex: none; }
+.activity .empty-row { color: var(--c-muted); }
+.pill-level { display: inline-flex; align-items: center; gap: var(--space-1); border-radius: 999px; padding: 2px var(--space-2); font-size: 12px; font-weight: 700; white-space: nowrap; }
+.level-low { background: var(--c-success-bg); color: var(--c-success); }
+.level-personal { background: var(--c-private-bg); color: var(--c-private); }
+.level-conf { background: var(--c-warning-bg); color: var(--c-warning); }
+.level-ext { background: var(--c-danger-bg); color: var(--c-danger); }
+.checklist { margin: 0 0 var(--space-6); padding-left: var(--space-5); max-width: 78ch; }
+.checklist li { margin-bottom: var(--space-2); }
+
+/* =========================================================
    Filter bar
    ========================================================= */
-.filters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-3);
-  align-items: flex-end;
-  padding: var(--space-4) var(--space-5) 0;
-}
+.filters { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: flex-end; margin-bottom: var(--space-4); }
 .filters .field { display: flex; flex-direction: column; gap: var(--space-1); }
 .filters label { font-size: 12px; color: var(--c-muted); font-weight: 600; }
 .filters input, .filters select,
@@ -147,80 +304,54 @@ button, input, select, textarea { font: inherit; color: inherit; }
   border: 1px solid var(--c-border);
   border-radius: var(--radius-sm);
   padding: var(--space-2);
+  min-height: 40px;
   background: var(--c-surface);
   min-width: 160px;
 }
-.filter-count { font-size: 12px; color: var(--c-muted); align-self: center; }
+.filter-count { font-size: 13px; color: var(--c-muted); align-self: center; }
+.quick-chip {
+  display: inline-flex; align-items: center; gap: var(--space-2);
+  background: var(--c-brand-light); color: var(--c-brand-dark);
+  border-radius: 999px; padding: 2px 2px 2px var(--space-3);
+  font-size: 13px; font-weight: 600; align-self: center;
+}
+.quick-chip button { border: 0; background: rgba(11, 61, 145, 0.12); border-radius: 50%; width: 28px; height: 28px; font-size: 16px; line-height: 1; }
 
 /* =========================================================
    Board and columns
    ========================================================= */
 .board {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: var(--space-4);
-  padding: var(--space-4) var(--space-5) var(--space-6);
   align-items: start;
 }
-.column {
-  background: #e7ebf2;
-  border-radius: var(--radius);
-  padding: var(--space-3);
-  min-height: 240px;
-  border: 2px dashed transparent;
-  transition: background 0.15s, border-color 0.15s;
-}
+.column { background: #e5eaf2; border-radius: var(--radius); padding: var(--space-3); min-height: 200px; border: 2px dashed transparent; }
 .column.is-drop-target { background: var(--c-brand-light); border-color: var(--c-brand); }
-.column-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: var(--space-3);
-}
-.column-header h2 { font-size: 15px; margin: 0; }
-.column-header p { margin: 0; font-size: 11px; color: var(--c-muted); }
-.count-badge {
-  background: var(--c-brand);
-  color: #fff;
-  border-radius: 999px;
-  min-width: 26px;
-  text-align: center;
-  padding: 2px var(--space-2);
-  font-size: 12px;
-  font-weight: 700;
-}
+.column-header { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); margin-bottom: var(--space-3); }
+.column-header h3 { font-size: 15px; margin: 0; }
+.column-header p { margin: 0; font-size: 12px; color: var(--c-muted); }
+.count-badge { background: var(--c-brand); color: #fff; border-radius: 999px; min-width: 26px; text-align: center; padding: 2px var(--space-2); font-size: 12px; font-weight: 700; }
 .card-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-3); }
-.empty { color: var(--c-muted); font-size: 12px; text-align: center; padding: var(--space-4) 0; }
+.empty { color: var(--c-muted); font-size: 13px; text-align: center; padding: var(--space-4) 0; }
 
 /* =========================================================
    Task card
    ========================================================= */
-.card {
-  background: var(--c-surface);
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow);
-  border-left: 5px solid var(--c-low);
-  padding: var(--space-3);
-  cursor: grab;
-}
+.card { background: var(--c-surface); border-radius: var(--radius-sm); box-shadow: var(--shadow); border-left: 5px solid var(--c-low); padding: var(--space-3); cursor: grab; }
 .card.is-dragging { opacity: 0.45; }
 .card[data-priority="Critical"] { border-left-color: var(--c-critical); }
 .card[data-priority="High"] { border-left-color: var(--c-high); }
 .card[data-priority="Medium"] { border-left-color: var(--c-medium); }
 .card[data-priority="Low"] { border-left-color: var(--c-low); }
 .card-top { display: flex; justify-content: space-between; align-items: center; gap: var(--space-2); }
-.task-id { font-size: 11px; font-family: ui-monospace, Menlo, Consolas, monospace; color: var(--c-muted); }
-.card h3 { font-size: 14px; margin: var(--space-1) 0 var(--space-2); word-break: break-word; }
-.meta { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 2px var(--space-2); font-size: 12px; }
+.task-id { font-size: 12px; font-family: ui-monospace, Menlo, Consolas, monospace; color: var(--c-muted); }
+.card h4 { font-size: 14px; margin: var(--space-1) 0 var(--space-2); word-break: break-word; }
+.meta { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 2px var(--space-2); font-size: 13px; }
 .meta dt { color: var(--c-muted); }
 .meta dd { margin: 0; word-break: break-word; }
 .tags { display: flex; flex-wrap: wrap; gap: var(--space-1); margin-top: var(--space-2); }
-.pill, .tag, .overdue {
-  font-size: 11px;
-  font-weight: 600;
-  border-radius: 999px;
-  padding: 1px var(--space-2);
-}
+.pill, .tag, .overdue { font-size: 12px; font-weight: 600; border-radius: 999px; padding: 1px var(--space-2); }
 .pill { color: #fff; }
 .pill-Critical { background: var(--c-critical); }
 .pill-High { background: var(--c-high); color: #1b1300; }
@@ -228,59 +359,21 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .pill-Low { background: var(--c-low); color: #10151f; }
 .tag { background: var(--c-brand-light); color: var(--c-brand-dark); }
 .overdue { background: var(--c-danger-bg); color: var(--c-danger); border: 1px solid #f3b7b2; }
-.card-actions {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: var(--space-2);
-  margin-top: var(--space-3);
-  padding-top: var(--space-2);
-  border-top: 1px solid var(--c-border);
-}
-.move { display: flex; align-items: center; gap: var(--space-1); font-size: 12px; color: var(--c-muted); }
-.move select { border: 1px solid var(--c-border); border-radius: var(--radius-sm); padding: 2px var(--space-1); background: var(--c-surface); }
-.icon-btn {
-  border: 1px solid transparent;
-  background: transparent;
-  border-radius: var(--radius-sm);
-  width: 28px; height: 28px;
-  cursor: pointer;
-  font-size: 18px;
-  line-height: 1;
-  color: var(--c-muted);
-}
+.card-actions { display: flex; justify-content: space-between; align-items: center; gap: var(--space-2); margin-top: var(--space-3); padding-top: var(--space-2); border-top: 1px solid var(--c-border); }
+.move { display: flex; align-items: center; gap: var(--space-1); font-size: 13px; color: var(--c-muted); }
+.move select { border: 1px solid var(--c-border); border-radius: var(--radius-sm); padding: 4px var(--space-1); min-height: 36px; background: var(--c-surface); }
+.icon-btn { border: 1px solid transparent; background: transparent; border-radius: var(--radius-sm); width: 36px; height: 36px; font-size: 20px; line-height: 1; color: var(--c-muted); }
 .icon-btn:hover { background: var(--c-danger-bg); color: var(--c-danger); }
-.confirm { display: flex; align-items: center; gap: var(--space-1); font-size: 12px; color: var(--c-danger); font-weight: 600; }
-.confirm button {
-  border: 1px solid var(--c-border);
-  border-radius: var(--radius-sm);
-  background: var(--c-surface);
-  padding: 2px var(--space-2);
-  cursor: pointer;
-  font-size: 12px;
-}
+.confirm { display: flex; align-items: center; gap: var(--space-1); font-size: 13px; color: var(--c-danger); font-weight: 600; }
+.confirm button { border: 1px solid var(--c-border); border-radius: var(--radius-sm); background: var(--c-surface); padding: 4px var(--space-2); min-height: 36px; font-size: 13px; }
 .confirm .yes { background: var(--c-danger); color: #fff; border-color: var(--c-danger); }
 
 /* =========================================================
    Add Task modal
    ========================================================= */
-.modal-backdrop {
-  position: fixed; inset: 0;
-  background: rgba(10, 20, 40, 0.5);
-  display: flex; align-items: flex-start; justify-content: center;
-  padding: var(--space-6) var(--space-4);
-  overflow-y: auto;
-  z-index: 10;
-}
+.modal-backdrop { position: fixed; inset: 0; background: rgba(10, 20, 40, 0.5); display: flex; align-items: flex-start; justify-content: center; padding: var(--space-6) var(--space-4); overflow-y: auto; z-index: 30; }
 .modal-backdrop[hidden] { display: none; }
-.modal {
-  background: var(--c-surface);
-  border-radius: var(--radius);
-  width: 100%;
-  max-width: 560px;
-  padding: var(--space-5);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
-}
+.modal { background: var(--c-surface); border-radius: var(--radius); width: 100%; max-width: 560px; padding: var(--space-5); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25); }
 .modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-4); }
 .modal-head h2 { margin: 0; font-size: 18px; }
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3) var(--space-4); }
@@ -289,44 +382,47 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .form-field label { font-weight: 600; font-size: 13px; }
 .form-field input, .form-field select, .form-field textarea { min-width: 0; width: 100%; }
 .form-field textarea { resize: vertical; min-height: 70px; }
-.form-field .hint { font-size: 11px; color: var(--c-muted); }
-.form-field .error { font-size: 12px; color: var(--c-danger); min-height: 0; }
-.form-field.has-error input,
-.form-field.has-error select,
-.form-field.has-error textarea { border-color: var(--c-danger); }
+.form-field .hint { font-size: 12px; color: var(--c-muted); }
+.form-field .error { font-size: 13px; color: var(--c-danger); }
+.form-field.has-error input, .form-field.has-error select, .form-field.has-error textarea { border-color: var(--c-danger); }
 .req { color: var(--c-danger); }
+.data-note { display: flex; gap: var(--space-2); align-items: flex-start; margin: var(--space-4) 0 0; padding: var(--space-3); border-radius: var(--radius-sm); background: var(--c-private-bg); color: #3f1a5a; font-size: 13px; }
 .form-actions { display: flex; justify-content: flex-end; gap: var(--space-2); margin-top: var(--space-5); }
 
 /* =========================================================
    Toasts
    ========================================================= */
-.toasts {
-  position: fixed;
-  bottom: var(--space-4);
-  right: var(--space-4);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  z-index: 20;
-  max-width: calc(100vw - 2 * var(--space-4));
-}
-.toast {
-  border-radius: var(--radius-sm);
-  padding: var(--space-3) var(--space-4);
-  box-shadow: var(--shadow);
-  font-weight: 600;
-  border-left: 4px solid currentColor;
-}
+.toasts { position: fixed; bottom: var(--space-4); right: var(--space-4); display: flex; flex-direction: column; gap: var(--space-2); z-index: 40; max-width: calc(100vw - 2 * var(--space-4)); }
+.toast { border-radius: var(--radius-sm); padding: var(--space-3) var(--space-4); box-shadow: var(--shadow); font-weight: 600; border-left: 4px solid currentColor; }
 .toast-success { background: var(--c-success-bg); color: var(--c-success); }
 .toast-warning { background: var(--c-warning-bg); color: var(--c-warning); }
 .toast-info { background: var(--c-brand-light); color: var(--c-brand-dark); }
 
 /* =========================================================
-   Responsive: stack columns below 768px
+   Motion: only when the user has not asked to reduce it
    ========================================================= */
-@media (max-width: 767px) {
-  .app-header, .filters, .board { padding-left: var(--space-3); padding-right: var(--space-3); }
-  .board { grid-template-columns: 1fr; }
+@media (prefers-reduced-motion: no-preference) {
+  .column { transition: background 0.15s, border-color 0.15s; }
+  .btn, .nav-link, .live-btn { transition: background 0.15s; }
+  .live[data-state="refreshing"] .live-dot { animation: pulse 0.8s ease-in-out infinite alternate; }
+  @keyframes pulse { from { opacity: 1; } to { opacity: 0.3; } }
+}
+
+/* =========================================================
+   Responsive: sidebar becomes a bottom bar below 900px
+   ========================================================= */
+@media (max-width: 899px) {
+  .app-header, .note { padding-left: var(--space-4); padding-right: var(--space-4); }
+  .shell { display: block; }
+  .sidebar {
+    position: fixed; top: auto; bottom: 0; left: 0; right: 0; z-index: 20;
+    min-height: 0; padding: var(--space-1) var(--space-2) calc(var(--space-1) + env(safe-area-inset-bottom));
+  }
+  .nav-list { flex-direction: row; justify-content: space-around; }
+  .nav-link { flex-direction: column; justify-content: center; gap: 2px; min-height: 52px; padding: 0 var(--space-2); font-size: 12px; text-align: center; }
+  .sidebar-foot { display: none; }
+  main { padding: var(--space-4) var(--space-4) 88px; }
+  .toasts { bottom: 80px; }
   .form-grid { grid-template-columns: 1fr; }
   .filters .field, .filters input, .filters select { width: 100%; }
 }
@@ -335,41 +431,148 @@ button, input, select, textarea { font: inherit; color: inherit; }
 <body>
 
 <!-- =========================================================
-     Header: wordmark, live summary strip, Add Task button
+     Header: wordmark, live-refresh status, Add Task
      ========================================================= -->
 <header class="app-header">
-  <h1 class="wordmark"><span class="wordmark-box">IT PMO</span> <small>Kanban Board</small></h1>
-  <ul class="summary" id="summary" aria-label="Board summary"></ul>
-  <button type="button" class="btn" id="open-add">+ Add Task</button>
+  <h1 class="wordmark"><span class="wordmark-box">IT PMO</span> <small>Control Room</small></h1>
+  <div class="live" id="live" data-state="loading">
+    <span class="live-dot" aria-hidden="true"></span>
+    <span id="live-text">Loading figures…</span>
+    <button type="button" class="live-btn" id="live-toggle"></button>
+  </div>
+  <button type="button" class="btn" id="open-add"></button>
 </header>
-<p class="note">Demo mode: tasks are held in memory only. Refreshing the page resets the board to the sample data.</p>
+<p class="note">Demo mode: tasks are held in memory only. Refreshing the page resets the board to the sample data. Do not enter real customer or confidential information.</p>
 
-<main>
+<div class="shell">
   <!-- =======================================================
-       Filter bar
+       Navigation (built from VIEWS)
        ======================================================= -->
-  <section class="filters" aria-label="Filter tasks">
-    <div class="field">
-      <label for="filter-project">Project</label>
-      <select id="filter-project"><option value="">All projects</option></select>
-    </div>
-    <div class="field">
-      <label for="filter-assignee">Assignee contains</label>
-      <input type="search" id="filter-assignee" placeholder="e.g. Tan">
-    </div>
-    <div class="field">
-      <label for="filter-priority">Priority</label>
-      <select id="filter-priority"><option value="">All priorities</option></select>
-    </div>
-    <button type="button" class="btn btn-ghost" id="clear-filters">Clear filters</button>
-    <span class="filter-count" id="filter-count" aria-live="polite"></span>
-  </section>
+  <nav class="sidebar" aria-label="Main">
+    <ul class="nav-list" id="nav"></ul>
+    <p class="sidebar-foot">Figures refresh every 5 seconds from a simulated in-page source.</p>
+  </nav>
 
-  <!-- =======================================================
-       Kanban board (columns rendered by renderBoard)
-       ======================================================= -->
-  <section class="board" id="board" aria-label="Kanban board"></section>
-</main>
+  <main id="main">
+    <div class="page-head">
+      <h2 id="view-title" tabindex="-1"></h2>
+      <p id="view-blurb"></p>
+    </div>
+
+    <!-- Announces meaningful changes only, not every refresh -->
+    <p class="visually-hidden" id="live-announce" role="status" aria-live="polite"></p>
+
+    <!-- Headline in plain language (combined, kpis) -->
+    <section class="headline" id="headline" data-views="combined kpis" data-tone="neutral" aria-labelledby="headline-sentence">
+      <p class="headline-sentence" id="headline-sentence">Loading…</p>
+      <p class="headline-detail" id="headline-detail"></p>
+      <div class="mix" id="mix" role="img" aria-label="Share of tasks by stage"></div>
+      <ul class="mix-legend" id="mix-legend"></ul>
+    </section>
+
+    <!-- KPI cards (combined, kpis) -->
+    <section class="block" data-views="combined kpis" aria-labelledby="kpi-heading">
+      <h3 class="section-title" id="kpi-heading">Key figures</h3>
+      <p class="section-hint">Each card answers one question. Select “Show these tasks” to see the matching cards on the board.</p>
+      <p class="privacy-bar">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" id="privacy-bar-icon"></svg>
+        <span>These figures are counts only. No names, task titles or descriptions are used in the analytics. <a href="#privacy">How sensitive data is handled</a></span>
+      </p>
+      <ul class="kpi-grid" id="kpi-grid" aria-busy="true"></ul>
+    </section>
+
+    <!-- Filter bar (combined, board) -->
+    <section class="filters" data-views="combined board" aria-label="Filter tasks">
+      <div class="field">
+        <label for="filter-project">Project</label>
+        <select id="filter-project"><option value="">All projects</option></select>
+      </div>
+      <div class="field">
+        <label for="filter-assignee">Assignee contains</label>
+        <input type="search" id="filter-assignee" placeholder="e.g. Tan">
+      </div>
+      <div class="field">
+        <label for="filter-priority">Priority</label>
+        <select id="filter-priority"><option value="">All priorities</option></select>
+      </div>
+      <button type="button" class="btn btn-ghost" id="clear-filters">Clear filters</button>
+      <span id="quick-chip"></span>
+      <span class="filter-count" id="filter-count" aria-live="polite"></span>
+    </section>
+
+    <!-- Kanban board (combined, board) -->
+    <section class="block" id="board-section" data-views="combined board" aria-labelledby="board-heading">
+      <h3 class="section-title" id="board-heading">Task board</h3>
+      <p class="section-hint">Drag a card to another column, or use the Move menu on the card.</p>
+      <div class="board" id="board"></div>
+    </section>
+
+    <!-- Detail analytics (kpis) -->
+    <div data-views="kpis">
+      <div class="split">
+        <section aria-labelledby="proj-heading">
+          <div class="panel-head"><h3 id="proj-heading">Work by project</h3></div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th scope="col">Project</th><th scope="col" class="num">Open</th><th scope="col" class="num">Overdue</th><th scope="col" class="num">Blocked</th><th scope="col" class="num">Done</th></tr></thead>
+              <tbody id="project-rows"></tbody>
+            </table>
+          </div>
+        </section>
+        <section aria-labelledby="person-heading">
+          <div class="panel-head">
+            <h3 id="person-heading">Open work by person</h3>
+            <button type="button" class="btn btn-small" id="mask-toggle" aria-pressed="false"></button>
+          </div>
+          <p class="section-hint"><span class="personal-flag" id="person-flag"></span> Names are personal data, so they are shortened to initials unless you choose to show them.</p>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th scope="col">Person</th><th scope="col" class="num">Open</th><th scope="col" class="num">Overdue</th></tr></thead>
+              <tbody id="person-rows"></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+      <section class="block" aria-labelledby="changes-heading">
+        <h3 class="section-title" id="changes-heading">What changed since you opened this page</h3>
+        <p class="section-hint">Shows task IDs and stages only, never titles or descriptions.</p>
+        <ul class="activity" id="activity"></ul>
+      </section>
+    </div>
+
+    <!-- Data privacy (privacy) -->
+    <div data-views="privacy">
+      <section class="block" aria-labelledby="class-heading">
+        <h3 class="section-title" id="class-heading">What this dashboard handles</h3>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th scope="col">Information</th><th scope="col">Where it appears</th><th scope="col">Sensitivity</th><th scope="col">How it is handled</th></tr></thead>
+            <tbody id="class-rows"></tbody>
+          </table>
+        </div>
+      </section>
+      <section class="block" aria-labelledby="rules-heading">
+        <h3 class="section-title" id="rules-heading">Rules for analytics</h3>
+        <ul class="checklist">
+          <li>Analytics use counts and percentages only. Titles, descriptions and email text are never used.</li>
+          <li>Staff names are masked as initials by default. Showing them is a deliberate click and is not remembered.</li>
+          <li>The Add Task form blocks text that looks like a card number, national ID, email address or password.</li>
+          <li>Nothing is saved in the browser. Closing or refreshing the page clears everything.</li>
+        </ul>
+      </section>
+      <section class="block" aria-labelledby="gaps-heading">
+        <h3 class="section-title" id="gaps-heading">Before using real data</h3>
+        <p class="section-hint">This is a training demo. A production version would need these controls first.</p>
+        <ul class="checklist">
+          <li><strong>Sign-in and roles.</strong> Anyone with the page can see and change everything. Limit who can see names and descriptions.</li>
+          <li><strong>Audit trail.</strong> Moves and deletions are not recorded against a person. Add a server-side log.</li>
+          <li><strong>Approved email route.</strong> New-task emails go to an external service (FormSubmit). Replace it with an internal, approved channel.</li>
+          <li><strong>Classification and retention.</strong> Agree what may be entered, who can see it and how long it is kept.</li>
+        </ul>
+      </section>
+    </div>
+  </main>
+</div>
 
 <!-- =========================================================
      Add Task modal
@@ -377,13 +580,13 @@ button, input, select, textarea { font: inherit; color: inherit; }
 <div class="modal-backdrop" id="modal" hidden>
   <section class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
     <div class="modal-head">
-      <h2 id="modal-title">Add Task</h2>
-      <button type="button" class="icon-btn" id="close-add" aria-label="Close Add Task form">&times;</button>
+      <h2 id="modal-title">Add task</h2>
+      <button type="button" class="icon-btn" id="close-add" aria-label="Close Add task form">&times;</button>
     </div>
     <form id="task-form" novalidate>
       <div class="form-grid">
         <div class="form-field full">
-          <label for="f-title">Task Title <span class="req" aria-hidden="true">*</span></label>
+          <label for="f-title">Task title <span class="req" aria-hidden="true">*</span></label>
           <input type="text" id="f-title" name="title" maxlength="80" required aria-describedby="e-title">
           <span class="error" id="e-title"></span>
         </div>
@@ -394,7 +597,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
           <span class="error" id="e-description"></span>
         </div>
         <div class="form-field">
-          <label for="f-project">Project / Workstream <span class="req" aria-hidden="true">*</span></label>
+          <label for="f-project">Project / workstream <span class="req" aria-hidden="true">*</span></label>
           <select id="f-project" name="project" required aria-describedby="e-project"></select>
           <span class="error" id="e-project"></span>
         </div>
@@ -414,19 +617,23 @@ button, input, select, textarea { font: inherit; color: inherit; }
           <span class="error" id="e-priority"></span>
         </div>
         <div class="form-field">
-          <label for="f-dueDate">Due Date <span class="req" aria-hidden="true">*</span></label>
+          <label for="f-dueDate">Due date <span class="req" aria-hidden="true">*</span></label>
           <input type="date" id="f-dueDate" name="dueDate" required aria-describedby="e-dueDate">
           <span class="error" id="e-dueDate"></span>
         </div>
         <div class="form-field">
-          <label for="f-status">Status</label>
+          <label for="f-status">Stage</label>
           <select id="f-status" name="status" aria-describedby="e-status"></select>
           <span class="error" id="e-status"></span>
         </div>
       </div>
+      <p class="data-note">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" id="data-note-icon"></svg>
+        <span>New tasks are emailed to the PMO mailbox through FormSubmit, an external service. Do not enter customer details, account or card numbers, national IDs, passwords or confidential vendor terms.</span>
+      </p>
       <div class="form-actions">
         <button type="button" class="btn btn-ghost" id="cancel-add">Cancel</button>
-        <button type="submit" class="btn btn-primary" id="submit-btn">Add Task</button>
+        <button type="submit" class="btn btn-primary" id="submit-btn">Add task</button>
       </div>
     </form>
   </section>
@@ -446,15 +653,16 @@ button, input, select, textarea { font: inherit; color: inherit; }
    CONFIG: change the email address here (one place only)
    ========================================================= */
 const FORMSUBMIT_ENDPOINT = "https://formsubmit.co/ajax/YOUR_EMAIL@example.com";
+const REFRESH_MS = 5000;
 
 /* =========================================================
    Reference data
    ========================================================= */
 const STATUSES = [
-  { key: "Backlog", hint: "Logged, not yet scheduled" },
-  { key: "In Progress", hint: "Actively being worked" },
-  { key: "Blocked", hint: "Waiting on a dependency, vendor or approval" },
-  { key: "Done", hint: "Completed / closed" },
+  { key: "Backlog", seg: "backlog", hint: "Logged, not yet scheduled" },
+  { key: "In Progress", seg: "progress", hint: "Actively being worked" },
+  { key: "Blocked", seg: "blocked", hint: "Waiting on a dependency, vendor or approval" },
+  { key: "Done", seg: "done", hint: "Completed / closed" },
 ];
 const PROJECTS = [
   "Core Banking Upgrade", "Digital Channels", "Cybersecurity Uplift",
@@ -465,6 +673,58 @@ const CATEGORIES = [
   "Data", "Compliance", "Vendor",
 ];
 const PRIORITIES = ["Critical", "High", "Medium", "Low"];
+
+const VIEWS = [
+  { key: "combined", label: "Combined view", icon: "layout", title: "Combined view",
+    blurb: "The headline, the key figures and the task board on one page." },
+  { key: "board", label: "Task board", icon: "board", title: "Task board",
+    blurb: "Every task by stage. Drag cards between columns or use the Move menu." },
+  { key: "kpis", label: "KPIs and trends", icon: "chart", title: "KPIs and trends",
+    blurb: "How delivery is going, by project and by person, with the latest changes." },
+  { key: "privacy", label: "Data privacy", icon: "shield", title: "Sensitive data and privacy",
+    blurb: "What information this dashboard handles and how it is protected." },
+];
+
+// Quick filters that the KPI cards drill into
+const QUICK_FILTERS = {
+  overdue: { label: "Overdue tasks", test: (t) => isOverdue(t) },
+  blocked: { label: "Blocked tasks", test: (t) => t.status === "Blocked" },
+  urgent: { label: "Critical or high priority, still open", test: (t) => t.status !== "Done" && (t.priority === "Critical" || t.priority === "High") },
+};
+
+// How sensitive each kind of information is (drives the Data privacy page)
+const DATA_CLASSES = [
+  { what: "Counts and percentages", where: "Key figures, headline, project table", level: "low", levelLabel: "Low", how: "Aggregates only. Contain no names or text." },
+  { what: "Staff names", where: "Board cards, open work by person", level: "personal", levelLabel: "Personal data", how: "Shortened to initials in analytics unless deliberately shown." },
+  { what: "Task titles and descriptions", where: "Board cards, new-task email", level: "conf", levelLabel: "Confidential", how: "Never used in analytics. Scanned for card numbers, IDs, emails and passwords before a task is added." },
+  { what: "New-task email", where: "Sent to FormSubmit (outside the bank)", level: "ext", levelLabel: "Leaves the bank", how: "Warning shown on the form. Use an approved internal channel for real work." },
+  { what: "Browser storage", where: "Nowhere", level: "low", levelLabel: "None kept", how: "Nothing is saved. A refresh clears the board." },
+];
+
+/* =========================================================
+   Icons (inline SVG, 24x24 stroke icons)
+   ========================================================= */
+const ICONS = {
+  layout: '<rect x="3" y="3" width="18" height="7" rx="1"/><rect x="3" y="14" width="8" height="7" rx="1"/><rect x="13" y="14" width="8" height="7" rx="1"/>',
+  board: '<rect x="3" y="3" width="5" height="18" rx="1"/><rect x="10" y="3" width="5" height="12" rx="1"/><rect x="17" y="3" width="4" height="8" rx="1"/>',
+  chart: '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+  shield: '<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/>',
+  good: '<circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/>',
+  watch: '<path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18h.01"/>',
+  action: '<polygon points="8 2 16 2 22 8 22 16 16 22 8 22 2 16 2 8"/><path d="M12 7v6M12 16h.01"/>',
+  pause: '<path d="M8 5v14M16 5v14"/>',
+  play: '<path d="M7 4l13 8-13 8z"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
+  eye: '<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/>',
+  eyeoff: '<path d="M3 3l18 18M10.6 5.1A9.7 9.7 0 0112 5c6 0 10 7 10 7a17 17 0 01-3.2 3.9M6.6 6.6A17 17 0 002 12s4 7 10 7a9.6 9.6 0 004.4-1.1"/>',
+  user: '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/>',
+};
+function icon(name) {
+  return `<svg class="icon" viewBox="0 0 24 24" aria-hidden="true">${ICONS[name] || ""}</svg>`;
+}
+function setIcon(svgId, name) {
+  document.getElementById(svgId).innerHTML = ICONS[name];
+}
 
 /* =========================================================
    Date helpers (local dates as YYYY-MM-DD)
@@ -484,6 +744,9 @@ function formatDate(iso) {
   const [y, m, d] = iso.split("-").map(Number);
   return new Date(y, m - 1, d).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
 }
+function formatClock(date) {
+  return date.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+}
 function isOverdue(task) {
   return task.status !== "Done" && task.dueDate < todayIso();
 }
@@ -493,9 +756,11 @@ function isOverdue(task) {
    ========================================================= */
 const state = {
   tasks: [],
-  filters: { project: "", assignee: "", priority: "" },
+  filters: { project: "", assignee: "", priority: "", quick: "" },
   pendingDeleteId: null, // card currently showing "Delete? Yes / No"
   nextId: 1,
+  view: "combined",
+  maskNames: true, // analytics show initials until the user chooses otherwise
 };
 
 function nextTaskId() {
@@ -538,22 +803,46 @@ function optionsHtml(values, selected) {
     .map((v) => `<option value="${escapeHtml(v)}"${v === selected ? " selected" : ""}>${escapeHtml(v)}</option>`)
     .join("");
 }
+function plural(n, one, many) {
+  return n === 1 ? one : many;
+}
+// "Priya Nair" -> "P. N."
+function maskName(name) {
+  const parts = String(name || "").trim().split(/\s+/).filter(Boolean);
+  return parts.length ? parts.map((p) => p[0].toUpperCase() + ".").join(" ") : "Unassigned";
+}
+
+/* =========================================================
+   Sensitive data scan for text typed into the Add Task form
+   ========================================================= */
+const SENSITIVE_PATTERNS = [
+  { label: "a card or account number", re: /\b(?:\d[ -]?){13,19}\b/ },
+  { label: "a national ID number", re: /\b[STFGM]\d{7}[A-Z]\b/i },
+  { label: "an email address", re: /[^\s@]+@[^\s@]+\.[^\s@]+/ },
+  { label: "a password or key", re: /\b(?:password|passwd|pwd|secret|api[_ -]?key|token)\s*[:=]/i },
+];
+function findSensitive(text) {
+  const hit = SENSITIVE_PATTERNS.find((p) => p.re.test(text));
+  return hit ? hit.label : "";
+}
 
 /* =========================================================
    Filtering (pure, over the in-memory array)
    ========================================================= */
 function applyFilters(tasks) {
-  const { project, assignee, priority } = state.filters;
+  const { project, assignee, priority, quick } = state.filters;
   const needle = assignee.trim().toLowerCase();
+  const quickTest = QUICK_FILTERS[quick] ? QUICK_FILTERS[quick].test : null;
   return tasks.filter((t) =>
     (!project || t.project === project) &&
     (!priority || t.priority === priority) &&
-    (!needle || t.assignee.toLowerCase().includes(needle))
+    (!needle || t.assignee.toLowerCase().includes(needle)) &&
+    (!quickTest || quickTest(t))
   );
 }
 
 /* =========================================================
-   Rendering
+   Board rendering
    ========================================================= */
 function renderCard(task) {
   const overdue = isOverdue(task);
@@ -576,7 +865,7 @@ function renderCard(task) {
         <span class="task-id">${id}</span>
         ${overdue ? '<span class="overdue">Overdue</span>' : ""}
       </div>
-      <h3>${title}</h3>
+      <h4>${title}</h4>
       <dl class="meta">
         <dt>Project</dt><dd>${escapeHtml(task.project)}</dd>
         <dt>Assignee</dt><dd>${escapeHtml(task.assignee)}</dd>
@@ -587,7 +876,7 @@ function renderCard(task) {
         <span class="tag">${escapeHtml(task.category)}</span>
       </div>
       <div class="card-actions">
-        <label class="move" for="move-${id}">Move ▸
+        <label class="move" for="move-${id}">Move to
           <select id="move-${id}" data-action="move" data-id="${id}" aria-label="Move task ${id} to column">
             <option value="">Choose…</option>
             ${optionsHtml(otherStatuses, "")}
@@ -596,16 +885,6 @@ function renderCard(task) {
         ${deleteControl}
       </div>
     </li>`;
-}
-
-function renderSummary() {
-  const counts = Object.fromEntries(STATUSES.map((s) => [s.key, 0]));
-  state.tasks.forEach((t) => { counts[t.status] += 1; });
-  const overdue = state.tasks.filter(isOverdue).length;
-  document.getElementById("summary").innerHTML =
-    `<li>Total <strong>${state.tasks.length}</strong></li>` +
-    STATUSES.map((s) => `<li>${escapeHtml(s.key)} <strong>${counts[s.key]}</strong></li>`).join("") +
-    `<li class="${overdue ? "is-overdue" : ""}">Overdue <strong>${overdue}</strong></li>`;
 }
 
 function renderBoard() {
@@ -619,7 +898,7 @@ function renderBoard() {
       <section class="column" data-status="${escapeHtml(s.key)}" aria-labelledby="${headingId}">
         <div class="column-header">
           <div>
-            <h2 id="${headingId}">${escapeHtml(s.key)}</h2>
+            <h3 id="${headingId}">${escapeHtml(s.key)}</h3>
             <p>${escapeHtml(s.hint)}</p>
           </div>
           <span class="count-badge" aria-label="${tasks.length} tasks">${tasks.length}</span>
@@ -634,7 +913,355 @@ function renderBoard() {
   document.getElementById("filter-count").textContent =
     hidden ? `Showing ${visible.length} of ${state.tasks.length} tasks` : "";
 
-  renderSummary();
+  const quick = QUICK_FILTERS[state.filters.quick];
+  document.getElementById("quick-chip").innerHTML = quick
+    ? `<span class="quick-chip">Showing: ${escapeHtml(quick.label)}
+         <button type="button" data-action="clear-quick" aria-label="Remove the ${escapeHtml(quick.label)} filter">&times;</button></span>`
+    : "";
+}
+
+/* =========================================================
+   Simulated data source for analytics.
+   The spec forbids any network call except FormSubmit, so these
+   functions stand in for a server: they are genuinely async, they
+   take a copy of the tasks, and they resolve after a short delay.
+   ========================================================= */
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const latency = () => 120 + Math.random() * 280;
+
+function computeKpis(tasks) {
+  const counts = Object.fromEntries(STATUSES.map((s) => [s.key, 0]));
+  tasks.forEach((t) => { counts[t.status] += 1; });
+  const open = tasks.filter((t) => t.status !== "Done");
+  const attention = open.filter((t) => isOverdue(t) || t.status === "Blocked").length;
+  const total = tasks.length;
+  return {
+    total,
+    counts,
+    open: open.length,
+    overdue: open.filter(isOverdue).length,
+    blocked: counts.Blocked,
+    urgent: open.filter((t) => t.priority === "Critical" || t.priority === "High").length,
+    attention,
+    donePct: total ? Math.round((counts.Done / total) * 100) : 0,
+    onTrackPct: open.length ? Math.round(((open.length - attention) / open.length) * 100) : 100,
+  };
+}
+
+function computeWorkload(tasks) {
+  const byProject = PROJECTS.map((name) => {
+    const own = tasks.filter((t) => t.project === name);
+    const open = own.filter((t) => t.status !== "Done");
+    return {
+      name,
+      open: open.length,
+      overdue: open.filter(isOverdue).length,
+      blocked: own.filter((t) => t.status === "Blocked").length,
+      done: own.filter((t) => t.status === "Done").length,
+    };
+  });
+  const people = new Map();
+  tasks.filter((t) => t.status !== "Done").forEach((t) => {
+    const key = t.assignee.trim();
+    const row = people.get(key) || { name: key, open: 0, overdue: 0 };
+    row.open += 1;
+    if (isOverdue(t)) row.overdue += 1;
+    people.set(key, row);
+  });
+  const byPerson = [...people.values()].sort((a, b) => b.overdue - a.overdue || b.open - a.open);
+  return { byProject, byPerson };
+}
+
+// Compares with the previous stage of each task. IDs and stages only, never titles.
+function diffTasks(tasks, previous) {
+  const current = new Map(tasks.map((t) => [t.id, t.status]));
+  const events = [];
+  if (previous) {
+    current.forEach((status, id) => {
+      if (!previous.has(id)) events.push(`${id} was added to ${status}`);
+      else if (previous.get(id) !== status) events.push(`${id} moved from ${previous.get(id)} to ${status}`);
+    });
+    previous.forEach((_status, id) => {
+      if (!current.has(id)) events.push(`${id} was deleted`);
+    });
+  }
+  return { events, stages: current };
+}
+
+const api = {
+  async kpis(tasks) { await delay(latency()); return computeKpis(tasks); },
+  async workload(tasks) { await delay(latency()); return computeWorkload(tasks); },
+  async changes(tasks, previous) { await delay(latency()); return diffTasks(tasks, previous); },
+};
+
+/* =========================================================
+   KPI definitions: plain-language question, one number, one sentence
+   ========================================================= */
+const KPI_DEFS = [
+  { key: "open", label: "Work in progress", unit: "open tasks", explain: "Tasks that are not finished yet.",
+    read: (k) => ({ value: k.open }) },
+  { key: "done", label: "Finished so far", unit: "of all tasks", explain: "Share of all tasks that are complete.", pct: true,
+    read: (k) => ({ value: k.donePct, text: `${k.donePct}%` }) },
+  { key: "overdue", label: "Running late", unit: "overdue tasks", explain: "Past their due date and not finished.", quick: "overdue",
+    read: (k) => ({ value: k.overdue, tone: k.overdue === 0 ? "good" : k.overdue === 1 ? "watch" : "action" }) },
+  { key: "blocked", label: "Stuck", unit: "blocked tasks", explain: "Waiting on a vendor, an approval or another team.", quick: "blocked",
+    read: (k) => ({ value: k.blocked, tone: k.blocked === 0 ? "good" : k.blocked === 1 ? "watch" : "action" }) },
+  { key: "urgent", label: "Urgent work still open", unit: "critical or high", explain: "Top-priority tasks that are not done.", quick: "urgent",
+    read: (k) => ({ value: k.urgent, tone: k.urgent === 0 ? "good" : k.urgent <= 3 ? "watch" : "action" }) },
+  { key: "ontrack", label: "On track", unit: "of open tasks", explain: "Open tasks that are neither overdue nor blocked.", pct: true,
+    read: (k) => ({ value: k.onTrackPct, text: `${k.onTrackPct}%`, tone: k.onTrackPct >= 80 ? "good" : k.onTrackPct >= 60 ? "watch" : "action" }) },
+];
+const TONE_TEXT = { good: "On track", watch: "Keep an eye", action: "Needs action" };
+
+function buildKpiGrid() {
+  document.getElementById("kpi-grid").innerHTML = KPI_DEFS.map((d) => `
+    <li class="kpi" data-kpi="${d.key}">
+      <div class="kpi-head">
+        <h4 id="kpi-${d.key}-label">${escapeHtml(d.label)}</h4>
+        <span class="status" hidden></span>
+      </div>
+      <p class="kpi-value"><span class="num" aria-labelledby="kpi-${d.key}-label">–</span><span class="unit">${escapeHtml(d.unit)}</span></p>
+      <p class="kpi-explain">${escapeHtml(d.explain)}</p>
+      <p class="kpi-delta"></p>
+      ${d.quick ? `<button type="button" class="link-btn" data-quick="${d.quick}">Show these tasks</button>` : ""}
+    </li>`).join("");
+}
+
+function updateKpis(k, prev) {
+  KPI_DEFS.forEach((d) => {
+    const card = document.querySelector(`[data-kpi="${d.key}"]`);
+    const now = d.read(k);
+    card.querySelector(".num").textContent = now.text ?? String(now.value);
+
+    const chip = card.querySelector(".status");
+    chip.hidden = !now.tone;
+    if (now.tone) {
+      chip.className = `status status-${now.tone}`;
+      chip.innerHTML = `${icon(now.tone)}${TONE_TEXT[now.tone]}`;
+    }
+
+    const delta = card.querySelector(".kpi-delta");
+    if (!prev) { delta.textContent = ""; return; }
+    const diff = now.value - d.read(prev).value;
+    delta.textContent = diff === 0
+      ? "No change since last update"
+      : `${diff > 0 ? "▲ Up" : "▼ Down"} ${Math.abs(diff)}${d.pct ? " points" : ""} since last update`;
+  });
+  document.getElementById("kpi-grid").setAttribute("aria-busy", "false");
+}
+
+function renderHeadline(k) {
+  const el = document.getElementById("headline");
+  let sentence;
+  let tone;
+  if (k.open === 0) {
+    sentence = k.total ? "All work is finished." : "There are no tasks yet.";
+    tone = "good";
+  } else if (k.attention === 0) {
+    sentence = "Everything open is on track.";
+    tone = "good";
+  } else {
+    sentence = `${k.attention} of ${k.open} open ${plural(k.open, "task needs", "tasks need")} attention.`;
+    tone = k.attention / k.open >= 0.3 ? "action" : "watch";
+  }
+  const parts = [];
+  if (k.overdue) parts.push(`${k.overdue} ${plural(k.overdue, "is", "are")} overdue`);
+  if (k.blocked) parts.push(`${k.blocked} ${plural(k.blocked, "is", "are")} blocked`);
+  const detail = parts.length
+    ? `${parts.join(" and ")}${parts.length > 1 ? ". Some tasks may be both" : ""}.`
+    : "Nothing is overdue or blocked.";
+
+  el.dataset.tone = tone;
+  document.getElementById("headline-sentence").textContent = sentence;
+  document.getElementById("headline-detail").textContent = detail;
+
+  document.getElementById("mix").innerHTML = STATUSES
+    .filter((s) => k.counts[s.key] > 0)
+    .map((s) => `<span class="seg-${s.seg}" style="flex:${k.counts[s.key]}"></span>`).join("");
+  document.getElementById("mix").setAttribute("aria-label",
+    "Tasks by stage: " + STATUSES.map((s) => `${s.key} ${k.counts[s.key]}`).join(", "));
+  document.getElementById("mix-legend").innerHTML = STATUSES.map((s) =>
+    `<li><span class="swatch seg-${s.seg}"></span>${escapeHtml(s.key)}: <strong>${k.counts[s.key]}</strong></li>`).join("");
+}
+
+function renderWorkload(w) {
+  document.getElementById("project-rows").innerHTML = w.byProject.map((p) => `
+    <tr><th scope="row">${escapeHtml(p.name)}</th>
+      <td class="num">${p.open}</td><td class="num">${p.overdue}</td><td class="num">${p.blocked}</td><td class="num">${p.done}</td></tr>`).join("");
+
+  document.getElementById("person-rows").innerHTML = w.byPerson.length
+    ? w.byPerson.map((p) => `
+      <tr><th scope="row">${escapeHtml(state.maskNames ? maskName(p.name) : p.name)}</th>
+        <td class="num">${p.open}</td><td class="num">${p.overdue}</td></tr>`).join("")
+    : '<tr><td colspan="3" class="empty-row">No open work.</td></tr>';
+}
+
+function renderActivity() {
+  const list = document.getElementById("activity");
+  list.innerHTML = live.activity.length
+    ? live.activity.map((a) => `<li><time>${escapeHtml(a.time)}</time><span>${escapeHtml(a.text)}</span></li>`).join("")
+    : '<li><span class="empty-row">No changes yet. Move a card and it will appear here at the next update.</span></li>';
+}
+
+function renderMaskToggle() {
+  const btn = document.getElementById("mask-toggle");
+  btn.innerHTML = state.maskNames ? `${icon("eye")}Show full names` : `${icon("eyeoff")}Hide names`;
+  btn.setAttribute("aria-pressed", String(!state.maskNames));
+  document.getElementById("person-flag").innerHTML = `${icon("user")}Personal data`;
+}
+
+/* =========================================================
+   Live refresh every 5 seconds
+   - the three data requests are independent, so they run together
+   - requests never overlap; a change made mid-request triggers one re-run
+   - paused while the tab is hidden or when the user pauses
+   - the board is never re-rendered by a refresh, so drag, focus and
+     the delete confirmation are not disturbed
+   ========================================================= */
+const live = {
+  paused: false,
+  inflight: false,
+  rerun: false,
+  failed: false,
+  timer: null,
+  lastAt: 0,
+  prevKpis: null,
+  prevStages: null,
+  activity: [],
+};
+
+async function refresh() {
+  if (live.inflight) { live.rerun = true; return; }
+  live.inflight = true;
+  setLive("refreshing");
+  try {
+    const snapshot = state.tasks.map((t) => ({ ...t }));
+    const [kpis, workload, changes] = await Promise.all([
+      api.kpis(snapshot),
+      api.workload(snapshot),
+      api.changes(snapshot, live.prevStages),
+    ]);
+
+    const stamp = new Date();
+    changes.events.forEach((text) => live.activity.unshift({ time: formatClock(stamp), text }));
+    live.activity = live.activity.slice(0, 10);
+
+    renderHeadline(kpis);
+    updateKpis(kpis, live.prevKpis);
+    renderWorkload(workload);
+    renderActivity();
+    announceChange(kpis, live.prevKpis);
+
+    live.prevKpis = kpis;
+    live.prevStages = changes.stages;
+    live.lastAt = Date.now();
+    live.failed = false;
+  } catch (err) {
+    console.warn(err);
+    live.failed = true; // keep showing the last good figures
+  } finally {
+    live.inflight = false;
+    setLive();
+    if (live.rerun) { live.rerun = false; refresh(); } else { scheduleNext(); }
+  }
+}
+
+function scheduleNext() {
+  clearTimeout(live.timer);
+  if (live.paused || document.hidden) return;
+  live.timer = setTimeout(refresh, REFRESH_MS);
+}
+
+// Called after the user changes a task so the figures catch up straight away
+function refreshNow() {
+  clearTimeout(live.timer);
+  refresh();
+}
+
+function announceChange(k, prev) {
+  if (!prev) return;
+  const changed = ["open", "overdue", "blocked"].filter((key) => k[key] !== prev[key]);
+  if (!changed.length) return;
+  document.getElementById("live-announce").textContent =
+    `Figures updated. ${k.open} open, ${k.overdue} overdue, ${k.blocked} blocked.`;
+}
+
+function setLive(forced) {
+  const box = document.getElementById("live");
+  const text = document.getElementById("live-text");
+  const secs = live.lastAt ? Math.max(0, Math.round((Date.now() - live.lastAt) / 1000)) : 0;
+  let stateName = forced;
+  if (!stateName) stateName = live.failed ? "error" : live.paused ? "paused" : live.lastAt ? "ok" : "loading";
+  box.dataset.state = stateName;
+  text.textContent = {
+    loading: "Loading figures…",
+    refreshing: "Updating…",
+    ok: `Live: updated ${secs}s ago, refreshes every 5s`,
+    paused: `Paused: figures from ${secs}s ago`,
+    error: "Could not update. Showing the last figures and retrying",
+  }[stateName];
+}
+
+function bindLive() {
+  const toggle = document.getElementById("live-toggle");
+  const paint = () => {
+    toggle.innerHTML = live.paused ? `${icon("play")}Resume` : `${icon("pause")}Pause`;
+    toggle.setAttribute("aria-label", live.paused ? "Resume automatic updates" : "Pause automatic updates");
+  };
+  paint();
+  toggle.addEventListener("click", () => {
+    live.paused = !live.paused;
+    paint();
+    setLive();
+    if (live.paused) clearTimeout(live.timer); else refreshNow();
+  });
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) clearTimeout(live.timer);
+    else if (!live.paused) refreshNow();
+  });
+  // Tick the "updated Ns ago" label without touching the data
+  setInterval(() => { if (!document.hidden && !live.inflight) setLive(); }, 1000);
+}
+
+/* =========================================================
+   Navigation (hash-based so each view can be linked to)
+   ========================================================= */
+function viewFromHash() {
+  const key = location.hash.slice(1);
+  return VIEWS.some((v) => v.key === key) ? key : "combined";
+}
+
+function buildNav() {
+  document.getElementById("nav").innerHTML = VIEWS.map((v) => `
+    <li><a class="nav-link" href="#${v.key}" data-view="${v.key}">${icon(v.icon)}<span>${escapeHtml(v.label)}</span></a></li>`).join("");
+}
+
+function setView(key, focusTitle) {
+  const view = VIEWS.find((v) => v.key === key) || VIEWS[0];
+  state.view = view.key;
+  document.querySelectorAll("[data-views]").forEach((el) => {
+    el.hidden = !el.dataset.views.split(" ").includes(view.key);
+  });
+  document.querySelectorAll(".nav-link").forEach((a) => {
+    if (a.dataset.view === view.key) a.setAttribute("aria-current", "page");
+    else a.removeAttribute("aria-current");
+  });
+  const title = document.getElementById("view-title");
+  title.textContent = view.title;
+  document.getElementById("view-blurb").textContent = view.blurb;
+  document.title = `${view.title} - IT PMO Control Room`;
+  if (focusTitle) title.focus();
+}
+
+// A KPI card was chosen: show only the matching tasks on the board
+function drillInto(quickKey) {
+  state.filters.quick = quickKey;
+  setView("combined", false);
+  history.replaceState(null, "", "#combined");
+  renderBoard();
+  document.getElementById("board-section").scrollIntoView({ block: "start" });
+  document.getElementById("board-heading").setAttribute("tabindex", "-1");
+  document.getElementById("board-heading").focus();
 }
 
 /* =========================================================
@@ -644,6 +1271,7 @@ function addTask(fields) {
   const task = { id: nextTaskId(), ...fields };
   state.tasks.push(task);
   renderBoard();
+  refreshNow();
   return task;
 }
 
@@ -653,6 +1281,7 @@ function moveTask(id, newStatus) {
   task.status = newStatus;
   state.pendingDeleteId = null;
   renderBoard();
+  refreshNow();
   showToast(`${task.id} moved to ${newStatus}`, "info");
 }
 
@@ -661,6 +1290,7 @@ function deleteTask(id) {
   state.tasks = state.tasks.filter((t) => t.id !== id);
   state.pendingDeleteId = null;
   renderBoard();
+  refreshNow();
   if (task) showToast(`${task.id} deleted`, "info");
 }
 
@@ -731,17 +1361,19 @@ function readForm() {
 
 function validateTask(t) {
   const errors = {};
-  if (!t.title) errors.title = "Task title is required.";
-  else if (t.title.length > 80) errors.title = "Title must be 80 characters or fewer.";
-  if (t.description.length > 500) errors.description = "Description must be 500 characters or fewer.";
+  if (!t.title) errors.title = "Enter a task title.";
+  else if (t.title.length > 80) errors.title = "Shorten the title to 80 characters or fewer.";
+  else if (findSensitive(t.title)) errors.title = `The title looks like it contains ${findSensitive(t.title)}. Remove it before adding the task.`;
+  if (t.description.length > 500) errors.description = "Shorten the description to 500 characters or fewer.";
+  else if (findSensitive(t.description)) errors.description = `The description looks like it contains ${findSensitive(t.description)}. Remove it before adding the task.`;
   if (!PROJECTS.includes(t.project)) errors.project = "Choose a project or workstream.";
   if (!CATEGORIES.includes(t.category)) errors.category = "Choose a category.";
-  if (!t.assignee) errors.assignee = "Assignee is required.";
+  if (!t.assignee) errors.assignee = "Enter an assignee.";
   if (!PRIORITIES.includes(t.priority)) errors.priority = "Choose a priority.";
-  if (!t.dueDate) errors.dueDate = "Due date is required.";
+  if (!t.dueDate) errors.dueDate = "Choose a due date.";
   else if (!/^\d{4}-\d{2}-\d{2}$/.test(t.dueDate)) errors.dueDate = "Enter a valid date.";
-  else if (t.dueDate < todayIso()) errors.dueDate = "Due date cannot be in the past.";
-  if (!STATUSES.some((s) => s.key === t.status)) errors.status = "Choose a status.";
+  else if (t.dueDate < todayIso()) errors.dueDate = "Choose today or a later date.";
+  if (!STATUSES.some((s) => s.key === t.status)) errors.status = "Choose a stage.";
   return errors;
 }
 
@@ -789,7 +1421,7 @@ async function handleSubmit(event) {
     showToast("Card added locally — email notification failed", "warning", 6000);
   } finally {
     submitBtn.disabled = false;
-    submitBtn.textContent = "Add Task";
+    submitBtn.textContent = "Add task";
     if (!modal.hidden) closeModal();
   }
 }
@@ -899,7 +1531,7 @@ function bindFilters() {
   priority.insertAdjacentHTML("beforeend", optionsHtml(PRIORITIES, ""));
 
   const update = () => {
-    state.filters = { project: project.value, assignee: assignee.value, priority: priority.value };
+    state.filters = { ...state.filters, project: project.value, assignee: assignee.value, priority: priority.value };
     renderBoard();
   };
   project.addEventListener("change", update);
@@ -909,7 +1541,14 @@ function bindFilters() {
     project.value = "";
     assignee.value = "";
     priority.value = "";
+    state.filters.quick = "";
     update();
+  });
+  document.getElementById("quick-chip").addEventListener("click", (e) => {
+    if (!e.target.closest('[data-action="clear-quick"]')) return;
+    state.filters.quick = "";
+    renderBoard();
+    document.getElementById("clear-filters").focus();
   });
 }
 
@@ -922,10 +1561,34 @@ function init() {
   form.elements.priority.innerHTML = optionsHtml(PRIORITIES, "Medium");
   form.elements.status.innerHTML = optionsHtml(STATUSES.map((s) => s.key), "Backlog");
 
+  setIcon("privacy-bar-icon", "shield");
+  setIcon("data-note-icon", "shield");
+  document.getElementById("open-add").innerHTML = `${icon("plus")}Add task`;
+
+  buildNav();
+  buildKpiGrid();
+  renderMaskToggle();
+  document.getElementById("class-rows").innerHTML = DATA_CLASSES.map((c) => `
+    <tr><th scope="row">${escapeHtml(c.what)}</th><td>${escapeHtml(c.where)}</td>
+      <td><span class="pill-level level-${c.level}">${escapeHtml(c.levelLabel)}</span></td><td>${escapeHtml(c.how)}</td></tr>`).join("");
+
   const board = document.getElementById("board");
   bindDragAndDrop(board);
   bindCardControls(board);
   bindFilters();
+  bindLive();
+
+  document.getElementById("kpi-grid").addEventListener("click", (e) => {
+    const btn = e.target.closest("button[data-quick]");
+    if (btn) drillInto(btn.dataset.quick);
+  });
+  document.getElementById("mask-toggle").addEventListener("click", () => {
+    state.maskNames = !state.maskNames;
+    renderMaskToggle();
+    refreshNow();
+    document.getElementById("mask-toggle").focus();
+  });
+  window.addEventListener("hashchange", () => setView(viewFromHash(), true));
 
   form.addEventListener("submit", handleSubmit);
   document.getElementById("open-add").addEventListener("click", openModal);
@@ -936,6 +1599,8 @@ function init() {
 
   seedTasks();
   renderBoard();
+  setView(viewFromHash(), false);
+  refresh();
 }
 
 init();

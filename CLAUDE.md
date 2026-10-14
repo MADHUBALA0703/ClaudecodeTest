@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-A demo IT PMO Kanban board for a fictitious bank, used as a training tool. The whole app is one file, `index.html`, with inline `<style>` and `<script>`. There is no build, package manager, linter or test suite.
+A demo IT PMO control room (combined KPI + Kanban view) for a fictitious bank, used as a training tool. The whole app is one file, `index.html`, with inline `<style>` and `<script>`. There is no build, package manager, linter or test suite.
 
 ## Hard constraints (from the original spec; keep them)
 
@@ -25,13 +25,27 @@ A demo IT PMO Kanban board for a fictitious bank, used as a training tool. The w
 All behaviour follows one rule: **mutate `state`, then call `renderBoard()`**.
 
 - `state = { tasks, filters, pendingDeleteId, nextId }` is the single source of truth. Card UI state (which card is showing the delete confirm) lives in `state.pendingDeleteId`, not in the DOM.
-- `renderBoard()` rebuilds every column from `applyFilters(state.tasks)` via `renderCard()`, then calls `renderSummary()` (header counts are always computed over all tasks, not the filtered set). Nothing outside `renderBoard()` edits card contents directly.
-- `addTask()`, `moveTask()` and `deleteTask()` are the only task mutators. Task IDs come from `nextTaskId()` as `UOB-ITPM-####`; seed tasks consume IDs 0001–0008.
+- `renderBoard()` rebuilds every column from `applyFilters(state.tasks)` via `renderCard()`. Nothing outside `renderBoard()` edits card contents directly. A refresh never calls it, so drag, focus and the delete confirm are not disturbed.
+- `addTask()`, `moveTask()` and `deleteTask()` are the only task mutators; each calls `renderBoard()` then `refreshNow()`. Task IDs come from `nextTaskId()` as `UOB-ITPM-####`; seed tasks consume IDs 0001–0008.
 - Event handling is delegated: `bindDragAndDrop(board)` and `bindCardControls(board)` attach once to `#board`, so re-rendering never needs rebinding. Card buttons/selects are identified by `data-action` and `data-id`. After a re-render, `focusCardControl()` restores keyboard focus.
 - Drag and drop uses the native HTML5 API; the drop target column reads `data-status`. The "Move ▸" select is the keyboard fallback and calls the same `moveTask()`.
 - All user strings pass through `escapeHtml()` before going into template literals. Keep that for any new field.
 - Dates are local `YYYY-MM-DD` strings compared lexically (`todayIso()`). Seed due dates are offsets from today (`offsetIso`) so some cards are always overdue.
 - Reference lists (`STATUSES`, `PROJECTS`, `CATEGORIES`, `PRIORITIES`) drive the columns, form selects, filters and validation. Add a column or option there, not in markup.
+
+## Views, KPIs and live refresh
+
+- `VIEWS` drives the sidebar (bottom bar under 900px) and hash routing (`#combined`, `#board`, `#kpis`, `#privacy`). Sections carry `data-views="..."`; `setView()` toggles `hidden`. Combined = headline + KPI cards + board.
+- KPI cards are built once by `buildKpiGrid()` from `KPI_DEFS` and updated in place by `updateKpis()` (so focus survives). KPI "Show these tasks" sets `state.filters.quick` (`QUICK_FILTERS`) and drills into the board. Header counts are computed over all tasks, not the filtered set.
+- Analytics data comes from `api.*` in the script: simulated async functions (local, with latency), because the only allowed network call is FormSubmit. `refresh()` runs them with `Promise.all`, never overlaps requests (`live.inflight`/`live.rerun`), reschedules itself every `REFRESH_MS` (5s), and pauses when the tab is hidden or the user clicks Pause.
+- Keep the async rules in `.claude/skills/frontend-async-best-practices`: parallelise independent work, chain only dependent work.
+
+## Sensitive data in analytics
+
+- Analytics use counts only. Never put titles, descriptions or emails into KPIs, tables or the activity log (IDs and stages only).
+- Staff names are masked to initials (`maskName()`, `state.maskNames`) unless the user clicks "Show full names"; this is never persisted.
+- `findSensitive()` blocks card/account numbers, national IDs, emails and password-like text in the Add Task title and description. The modal warns that FormSubmit is an external service.
+- `DATA_CLASSES` feeds the Data privacy view. Add a row there when a new kind of data is shown.
 
 ## Add Task and FormSubmit
 
